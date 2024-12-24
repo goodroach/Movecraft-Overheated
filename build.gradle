@@ -1,0 +1,106 @@
+plugins {
+    id 'java-library'
+    id 'maven-publish'
+    id 'io.github.0ffz.github-packages' version '1.2.1'
+    id 'io.papermc.hangar-publish-plugin' version '0.1.2'
+}
+
+group = 'me.goodroach'
+version = '1.0'
+
+repositories {
+    gradlePluginPortal()
+    mavenLocal()
+    mavenCentral()
+    maven {
+        name = 'papermc'
+        url = 'https://repo.papermc.io/repository/maven-public/'
+    }
+    maven {
+        name = "GitHubPackages"
+        url = uri("https://maven.pkg.github.com/apdevteam/movecraft")
+        credentials {
+            username = System.getenv("GITHUB_ACTOR") ?: "your-username"
+            password = System.getenv("GITHUB_TOKEN") ?: "your-token"
+        }
+    }
+}
+
+dependencies {
+    api 'org.jetbrains:annotations-java5:24.1.0'
+    compileOnly 'io.papermc.paper:paper-api:1.21.3-R0.1-SNAPSHOT'
+    compileOnly("net.countercraft:movecraft:+") // Automatically depend on the latest Movecraft
+    compileOnly 'it.unimi.dsi:fastutil:8.5.11'
+}
+
+def targetJavaVersion = 21
+java {
+    def javaVersion = JavaVersion.toVersion(targetJavaVersion)
+    sourceCompatibility = javaVersion
+    targetCompatibility = javaVersion
+    if (JavaVersion.current() < javaVersion) {
+        toolchain.languageVersion = JavaLanguageVersion.of(targetJavaVersion)
+    }
+}
+
+tasks.withType(JavaCompile).configureEach {
+    if (targetJavaVersion >= 10 || JavaVersion.current().isJava10Compatible()) {
+        options.release.set(targetJavaVersion)
+    }
+}
+
+processResources {
+    def props = [version: version]
+    inputs.properties props
+    filteringCharset 'UTF-8'
+    filesMatching('plugin.yml') {
+        expand props
+    }
+}
+
+publishing {
+    publications {
+        maven(MavenPublication) {
+            groupId = 'net.countercraft.movecraft.combat'
+            artifactId = 'movecraft-combat'
+            version = project.version
+
+            artifact tasks.jar
+        }
+    }
+    repositories {
+        maven {
+            name = 'GitHubPackages'
+            url = uri('https://maven.pkg.github.com/apdevteam/movecraft-combat')
+            credentials {
+                username = System.getenv('GITHUB_ACTOR') ?: 'your-username'
+                password = System.getenv('GITHUB_TOKEN') ?: 'your-token'
+            }
+        }
+    }
+}
+
+
+hangarPublish {
+    publications {
+        plugin {
+            version = project.version.toString()
+            channel = "Release"
+            id = "Airship-Pirates/Movecraft-Combat"
+            apiKey = System.getenv("HANGAR_API_TOKEN")
+
+            platforms {
+                paper {
+                    jar = tasks.jar.archiveFile
+                    platformVersions = ["1.18.2-1.21.1"]
+
+                    dependencies {
+                        hangar("Movecraft") {
+                            required = true
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
