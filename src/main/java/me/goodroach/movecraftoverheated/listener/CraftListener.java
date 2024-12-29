@@ -1,5 +1,7 @@
 package me.goodroach.movecraftoverheated.listener;
 
-public class CraftListener {
+import org.bukkit.event.Listener;
+
+public class CraftListener implements Listener {
 
 }

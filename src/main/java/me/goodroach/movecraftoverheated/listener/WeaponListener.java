@@ -18,7 +18,6 @@ import java.util.Set;
 
 public class WeaponListener implements Listener {
     private WeaponHeatManager heatManager;
-    private Set<Weapon> weaponSet;
 
     public WeaponListener(WeaponHeatManager heatManager) {
         this.heatManager = heatManager;

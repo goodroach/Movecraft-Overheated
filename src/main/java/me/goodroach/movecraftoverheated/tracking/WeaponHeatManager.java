@@ -1,9 +1,7 @@
 package me.goodroach.movecraftoverheated.tracking;
 
-import me.goodroach.movecraftoverheated.MovecraftOverheated;
 import me.goodroach.movecraftoverheated.weapons.Weapon;
 import org.bukkit.Material;
-import org.bukkit.NamespacedKey;
 import org.bukkit.block.Block;
 import org.bukkit.block.TileState;
 import org.bukkit.event.Listener;
@@ -11,18 +9,18 @@ import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.scheduler.BukkitRunnable;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import static me.goodroach.movecraftoverheated.MovecraftOverheated.heatKey;
+
 public class WeaponHeatManager extends BukkitRunnable implements Listener {
     private final GraphManager graphManager;
     private Map<Material, DispenserGraph> weapons = new HashMap<>();
     private Set<DispenserWeapon> trackedDispensers = new HashSet<>();
-    private static final NamespacedKey key = new NamespacedKey(MovecraftOverheated.getInstance(), "heat");
 
     public WeaponHeatManager(GraphManager graphManager) {
         this.graphManager = graphManager;
@@ -56,30 +54,33 @@ public class WeaponHeatManager extends BukkitRunnable implements Listener {
      * @throws IllegalArgumentException If the dispenser weapon's block is not of type {@link Material#DISPENSER}.
      */
     public void setDispenserHeat(DispenserWeapon dispenserWeapon, int amount) {
-        Block dispenser = dispenserWeapon.block();
-        if (dispenserWeapon.block().getType() != Material.DISPENSER) {
-            return;
+        if (dispenserWeapon == null) {
+            throw new IllegalArgumentException("DispenserWeapon cannot be null");
         }
+
+        Block dispenser = dispenserWeapon.block();
         TileState state = (TileState) dispenser.getState();
         PersistentDataContainer dataContainer = state.getPersistentDataContainer();
 
         // This resets the dispenser's tile state if the plugin did not track it due to a crash or a bug.
-        if (trackedDispensers.contains(dispenserWeapon)) {
-            dataContainer.remove(key);
+        if (!trackedDispensers.contains(dispenserWeapon)) {
+            dataContainer.remove(heatKey);
+            System.out.println("Dispenser not found in plugin, removing previous data.");
         }
 
-        if (dataContainer.has(key)) {
-            amount += dataContainer.get(key, PersistentDataType.INTEGER);
-        }
+        int currentAmount = dataContainer.getOrDefault(heatKey, PersistentDataType.INTEGER, 0);
+        System.out.println("The current amount is set to: " + currentAmount);
+        amount += currentAmount;
+        System.out.println("The new amount is set to: " + amount);
 
         // Cleans the data container and the list of tracked dispensers.
         if (amount <= 0) {
-            amount = 0;
             trackedDispensers.remove(dispenser);
-            dataContainer.remove(key);
+            dataContainer.remove(heatKey);
+            System.out.println("Amount is determined to be less than zero, removing data.");
         }
 
-        dataContainer.set(key, PersistentDataType.INTEGER, amount);
+        dataContainer.set(heatKey, PersistentDataType.INTEGER, amount);
         state.update();
         trackedDispensers.add(dispenserWeapon);
     }
@@ -102,10 +103,6 @@ public class WeaponHeatManager extends BukkitRunnable implements Listener {
                 setDispenserHeat(dispenser, dispenserTree.size() * weapon.getHeatRate());
             }
         }
-    }
-
-    public static NamespacedKey getKey() {
-        return key;
     }
 
     public Map<Material, DispenserGraph> getWeapons() {

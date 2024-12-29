@@ -1,7 +1,6 @@
 package me.goodroach.movecraftoverheated.commands;
 
 import me.goodroach.movecraftoverheated.tracking.WeaponHeatManager;
-import net.countercraft.movecraft.commands.MovecraftCommand;
 import net.countercraft.movecraft.util.ChatUtils;
 import net.kyori.adventure.text.Component;
 import org.bukkit.FluidCollisionMode;
@@ -50,13 +49,13 @@ public class CheckHeatCommand implements CommandExecutor {
 
         TileState state = (TileState) dispenser.getState();
         PersistentDataContainer container = state.getPersistentDataContainer();
-        if (container.get(WeaponHeatManager.getKey(), PersistentDataType.INTEGER) == null) {
+        if (container.get(WeaponHeatManager.getHeatKey(), PersistentDataType.INTEGER) == null) {
             baseMessage = baseMessage.append(Component.text("Current dispenser heat at: 0"));
             player.sendMessage(baseMessage);
             return true;
         }
 
-        int heat = container.get(WeaponHeatManager.getKey(), PersistentDataType.INTEGER);
+        int heat = container.get(WeaponHeatManager.getHeatKey(), PersistentDataType.INTEGER);
         baseMessage = baseMessage.append(Component.text("Current dispenser heat at: "))
                 .append(Component.text(heat));
         player.sendMessage(baseMessage);

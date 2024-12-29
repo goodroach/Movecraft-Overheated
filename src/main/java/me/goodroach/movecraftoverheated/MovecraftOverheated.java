@@ -7,6 +7,7 @@ import me.goodroach.movecraftoverheated.tracking.GraphManager;
 import me.goodroach.movecraftoverheated.tracking.WeaponHeatManager;
 import me.goodroach.movecraftoverheated.weapons.Weapon;
 import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -18,6 +19,8 @@ public final class MovecraftOverheated extends JavaPlugin {
     private static MovecraftOverheated instance;
     private WeaponHeatManager heatManager;
     private GraphManager graphManager;
+    public static final NamespacedKey heatKey = new NamespacedKey(MovecraftOverheated.getInstance(), "heat");
+    public static final NamespacedKey craftKey = new NamespacedKey(MovecraftOverheated.getInstance(), "craft");
 
     @Override
     public void onEnable() {
@@ -26,7 +29,7 @@ public final class MovecraftOverheated extends JavaPlugin {
 
         graphManager = new GraphManager();
         heatManager = new WeaponHeatManager(graphManager);
-        heatManager.runTaskTimer(MovecraftOverheated.getInstance(), 0L, 20L); // Run every 20 ticks (1 second)
+        heatManager.runTaskTimer(MovecraftOverheated.getInstance(), 0L, 1L); // Run every 20 ticks (1 second)
 
         //Listeners
         getServer().getPluginManager().registerEvents(new WeaponListener(heatManager), this);
