@@ -12,7 +12,6 @@ public class Weapon {
     private final byte[][] directions;
     private final int heatRate;
     private final int heatDissipation;
-    private HashMap<Block, Vector> nodes;
 
     public Weapon(
         Material material,
@@ -24,7 +23,6 @@ public class Weapon {
         this.directions = directions;
         this.heatRate = heatRate;
         this.heatDissipation = heatDissipation;
-        nodes = new LinkedHashMap<>();
     }
 
     public Material getMaterial() {
@@ -33,18 +31,6 @@ public class Weapon {
 
     public byte[][] getDirections() {
         return directions;
-    }
-
-    public HashMap<Block, Vector> getNodes() {
-        return nodes;
-    }
-
-    public void addNode(Block dispenser, Vector nodeLoc) {
-        nodes.put(dispenser, nodeLoc);
-    }
-
-    public void clearNodes() {
-        nodes.clear();
     }
 
     public int getHeatRate() {

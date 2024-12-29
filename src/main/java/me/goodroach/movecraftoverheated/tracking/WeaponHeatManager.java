@@ -1,13 +1,7 @@
 package me.goodroach.movecraftoverheated.tracking;
 
-import me.goodroach.movecraftoverheated.BFSUtils;
 import me.goodroach.movecraftoverheated.MovecraftOverheated;
 import me.goodroach.movecraftoverheated.weapons.Weapon;
-import net.countercraft.movecraft.MovecraftLocation;
-import net.countercraft.movecraft.TrackedLocation;
-import net.countercraft.movecraft.craft.Craft;
-import net.countercraft.movecraft.craft.CraftManager;
-import net.countercraft.movecraft.util.MathUtils;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.block.Block;
@@ -23,135 +17,102 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.WeakHashMap;
 
 public class WeaponHeatManager extends BukkitRunnable implements Listener {
-    private ArrayList<Weapon> weapons = new ArrayList<>();
-    private Map<Craft, CraftHeat> trackedCrafts = new WeakHashMap<>();
-    private Map<Block, Weapon> trackedDispensers = new WeakHashMap<>();
+    private final GraphManager graphManager;
+    private Map<Material, DispenserGraph> weapons = new HashMap<>();
+    private Set<DispenserWeapon> trackedDispensers = new HashSet<>();
     private static final NamespacedKey key = new NamespacedKey(MovecraftOverheated.getInstance(), "heat");
+
+    public WeaponHeatManager(GraphManager graphManager) {
+        this.graphManager = graphManager;
+    }
 
     @Override
     public void run() {
         long time = System.currentTimeMillis();
-        for (Weapon weapon : weapons) {
-            //coolDispensers(weapon);
+        for (DispenserGraph graph : weapons.values()) {
+            coolDispensers(graph.getWeapon());
 
-            if (weapon.getNodes().isEmpty() || weapon.getNodes() == null) {
-                continue;
-            }
+            List<List<DispenserWeapon>> dispenserForest = graphManager.getForest(graph);
 
-            List<List<Block>> dispenserForest = BFSUtils.getConnectedDispensers(
-                weapon.getDirections(), weapon.getNodes()
-            );
-
-            setHeatFromForest(dispenserForest, weapon);
-            weapon.clearNodes();
+            setHeatFromForest(dispenserForest, graph.getWeapon());
+            graph.clear();
         }
     }
 
     /**
-     * Sets or updates the heat level of a dispenser block.
+     * Sets the heat value for a given dispenser weapon.
      * <p>
-     * This method applies a heat value to a dispenser based on the provided weapon and its heat rate.
-     * If the heat value becomes zero or less, the dispenser is removed from the tracking map.
-     * Otherwise, the heat value is stored in the dispenser's persistent data container, and the dispenser is tracked.
+     * This method updates the persistent data container of the dispenser's block to track the heat value.
+     * It ensures that the dispenser's heat does not go below zero and removes the dispenser from tracking
+     * if the heat is reset to zero. It also handles scenarios where the dispenser was not properly tracked
+     * due to plugin crashes or bugs.
      * </p>
      *
-     * @param dispenser the {@link Block} representing the dispenser. Must be of type {@link Material#DISPENSER}.
-     *                  If the block is not a dispenser, the method will return without performing any operations.
-     * @param weapon    the {@link Weapon} associated with the dispenser, which determines the heat rate.
-     * @param amount    the base heat amount to apply to the dispenser. This value is modified by the weapon's heat rate.
-     *                  The resulting heat is added to any existing heat value if already set.
+     * @param dispenserWeapon The dispenser weapon whose heat is being set. This should not be {@code null}.
+     * @param amount The heat amount to set for the dispenser. A value less than or equal to zero will reset
+     *               the heat and remove the dispenser from tracking.
+     * @throws IllegalArgumentException If the dispenser weapon's block is not of type {@link Material#DISPENSER}.
      */
-    public void setDispenserHeat(Block dispenser, Weapon weapon, int amount) {
-        if (dispenser.getType() != Material.DISPENSER) {
+    public void setDispenserHeat(DispenserWeapon dispenserWeapon, int amount) {
+        Block dispenser = dispenserWeapon.block();
+        if (dispenserWeapon.block().getType() != Material.DISPENSER) {
             return;
         }
         TileState state = (TileState) dispenser.getState();
         PersistentDataContainer dataContainer = state.getPersistentDataContainer();
 
-        amount *= weapon.getHeatRate();
+        // This resets the dispenser's tile state if the plugin did not track it due to a crash or a bug.
+        if (trackedDispensers.contains(dispenserWeapon)) {
+            dataContainer.remove(key);
+        }
+
         if (dataContainer.has(key)) {
             amount += dataContainer.get(key, PersistentDataType.INTEGER);
         }
+
+        // Cleans the data container and the list of tracked dispensers.
         if (amount <= 0) {
             amount = 0;
             trackedDispensers.remove(dispenser);
+            dataContainer.remove(key);
         }
 
         dataContainer.set(key, PersistentDataType.INTEGER, amount);
         state.update();
-        trackedDispensers.put(dispenser, weapon);
+        trackedDispensers.add(dispenserWeapon);
     }
 
     private void coolDispensers(Weapon weapon) {
-        for (Block block : trackedDispensers.keySet()) {
-            // Negative value as it is removing heat
-            setDispenserHeat(block, weapon, -1);
-        }
-    }
-
-    private void setHeatFromForest(List<List<Block>> forest, Weapon weapon) {
-        for (List<Block> dispenserTree : forest) {
-            System.out.println("Dispenser tree size: " + dispenserTree.size());
-            for (Block dispenser : dispenserTree) {
-                setDispenserHeat(dispenser, weapon, dispenserTree.size());
-            }
-        }
-    }
-
-    @Deprecated
-    private void coolDispenserHeat(Weapon weapon) {
-        if (trackedCrafts.isEmpty() || trackedCrafts == null) {
+        if (trackedDispensers.isEmpty()) {
             return;
         }
 
-        for (Craft craft : trackedCrafts.keySet()) {
-            CraftHeat heat = trackedCrafts.get(craft);
-            if (heat.getHeatMap() == null || heat.getHeatMap().isEmpty()) {
-                continue;
-            }
-
-            heat.getHeatMap().entrySet().removeIf(entry -> {
-                // I believe entry is what the heat map turns into?
-                entry.setValue(entry.getValue() - weapon.getHeatDissipation());
-                // This is the boolean value that makes it concurrently remove any heat values less than zero.
-                return entry.getValue() <= 0;
-            });
+        for (DispenserWeapon dispenser : trackedDispensers) {
+            // Negative value as it is removing heat
+            setDispenserHeat(dispenser, -1 * weapon.getHeatDissipation());
         }
     }
 
-    @Deprecated
-    private void setHeatFromForest(List<List<Block>> forest, int amount) {
-        for (List<Block> dispenserTree : forest) {
+    private void setHeatFromForest(List<List<DispenserWeapon>> forest, Weapon weapon) {
+        for (List<DispenserWeapon> dispenserTree : forest) {
             System.out.println("Dispenser tree size: " + dispenserTree.size());
-            for (Block dispenser : dispenserTree) {
-                Craft craft = MathUtils.fastNearestCraftToLoc(CraftManager.getInstance().getCrafts(), dispenser.getLocation());
-                if (craft == null) {
-                    continue;
-                }
-
-                MovecraftLocation location = MathUtils.bukkit2MovecraftLoc(dispenser.getLocation());
-                TrackedLocation trackedLocation = new TrackedLocation(craft, location);
-
-                if (trackedCrafts.get(craft) == null) {
-                    trackedCrafts.put(craft, new CraftHeat(craft));
-                }
-                trackedCrafts.get(craft).addHeat(trackedLocation, amount * dispenserTree.size());
+            for (DispenserWeapon dispenser : dispenserTree) {
+                setDispenserHeat(dispenser, dispenserTree.size() * weapon.getHeatRate());
             }
         }
-    }
-
-    public ArrayList<Weapon> getWeapons() {
-        return weapons;
-    }
-
-    public void setWeapons(ArrayList<Weapon> weapons) {
-        this.weapons = weapons;
     }
 
     public static NamespacedKey getKey() {
         return key;
+    }
+
+    public Map<Material, DispenserGraph> getWeapons() {
+        return weapons;
+    }
+
+    public void addWeapon(Weapon weapon) {
+        weapons.put(weapon.getMaterial(), new DispenserGraph(weapon));
     }
 }
