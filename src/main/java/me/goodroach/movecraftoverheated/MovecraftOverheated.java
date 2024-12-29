@@ -1,10 +1,12 @@
 package me.goodroach.movecraftoverheated;
 
+import me.goodroach.movecraftoverheated.commands.CheckHeatCommand;
 import me.goodroach.movecraftoverheated.config.Settings;
 import me.goodroach.movecraftoverheated.listener.WeaponListener;
 import me.goodroach.movecraftoverheated.tracking.WeaponHeatManager;
 import me.goodroach.movecraftoverheated.weapons.Weapon;
 import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -29,6 +31,8 @@ public final class MovecraftOverheated extends JavaPlugin {
 
         // Plugin startup logic
         initConfig();
+
+        this.getCommand("getheat").setExecutor(new CheckHeatCommand());
     }
 
     @Override
