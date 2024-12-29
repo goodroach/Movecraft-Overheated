@@ -7,6 +7,6 @@ authors: [ goodroach ]
 depend: [Movecraft]
 description: A plugin that adds heating and cooling to various weapons in movecraft.
 commands:
-  getheat:
+  checkheat:
     description: "Checks the current heat value of a dispenser."
     usage: "/<command>"

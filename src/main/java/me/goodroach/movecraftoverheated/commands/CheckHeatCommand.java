@@ -3,6 +3,7 @@ package me.goodroach.movecraftoverheated.commands;
 import me.goodroach.movecraftoverheated.tracking.WeaponHeatManager;
 import net.countercraft.movecraft.commands.MovecraftCommand;
 import net.countercraft.movecraft.util.ChatUtils;
+import net.kyori.adventure.text.Component;
 import org.bukkit.FluidCollisionMode;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -31,28 +32,34 @@ public class CheckHeatCommand implements CommandExecutor {
             return true;
         }
         Player player = (Player) sender;
+        Component baseMessage = ChatUtils.commandPrefix();
 
         RayTraceResult result = player.rayTraceBlocks(5, FluidCollisionMode.NEVER);
         if (result == null || result.getHitBlock() == null) {
-            player.sendMessage(ChatUtils.errorPrefix() + "You are not looking at a solid block.");
+            baseMessage = baseMessage.append(Component.text("You are not looking at a solid block."));
+            player.sendMessage(baseMessage);
             return true;
         }
 
         Block dispenser = result.getHitBlock();
         if (dispenser.getType() != Material.DISPENSER) {
-            player.sendMessage(ChatUtils.errorPrefix() + "This block is not a dispenser.");
+            baseMessage = baseMessage.append(Component.text("This block is not a dispenser."));
+            player.sendMessage(baseMessage);
             return true;
         }
 
         TileState state = (TileState) dispenser.getState();
         PersistentDataContainer container = state.getPersistentDataContainer();
         if (container.get(WeaponHeatManager.getKey(), PersistentDataType.INTEGER) == null) {
-            player.sendMessage(ChatUtils.commandPrefix() + "Current dispenser heat at: 0");
+            baseMessage = baseMessage.append(Component.text("Current dispenser heat at: 0"));
+            player.sendMessage(baseMessage);
             return true;
         }
 
         int heat = container.get(WeaponHeatManager.getKey(), PersistentDataType.INTEGER);
-        player.sendMessage(ChatUtils.commandPrefix() + "Current dispenser heat at: " + heat);
+        baseMessage = baseMessage.append(Component.text("Current dispenser heat at: "))
+                .append(Component.text(heat));
+        player.sendMessage(baseMessage);
 
         return true;
     }
