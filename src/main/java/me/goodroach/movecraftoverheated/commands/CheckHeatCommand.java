@@ -16,6 +16,8 @@ import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.util.RayTraceResult;
 import org.jetbrains.annotations.NotNull;
 
+import static me.goodroach.movecraftoverheated.MovecraftOverheated.heatKey;
+
 public class CheckHeatCommand implements CommandExecutor {
 
     @Override
@@ -49,13 +51,13 @@ public class CheckHeatCommand implements CommandExecutor {
 
         TileState state = (TileState) dispenser.getState();
         PersistentDataContainer container = state.getPersistentDataContainer();
-        if (container.get(WeaponHeatManager.getHeatKey(), PersistentDataType.INTEGER) == null) {
+        if (container.get(heatKey, PersistentDataType.INTEGER) == null) {
             baseMessage = baseMessage.append(Component.text("Current dispenser heat at: 0"));
             player.sendMessage(baseMessage);
             return true;
         }
 
-        int heat = container.get(WeaponHeatManager.getHeatKey(), PersistentDataType.INTEGER);
+        int heat = container.get(heatKey, PersistentDataType.INTEGER);
         baseMessage = baseMessage.append(Component.text("Current dispenser heat at: "))
                 .append(Component.text(heat));
         player.sendMessage(baseMessage);
