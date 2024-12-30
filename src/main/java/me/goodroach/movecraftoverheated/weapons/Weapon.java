@@ -7,11 +7,12 @@ import org.bukkit.util.Vector;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 
-public class Weapon {
-    private final Material material;
-    private final byte[][] directions;
-    private final int heatRate;
-    private final int heatDissipation;
+public record Weapon(
+        Material material,
+        byte[][] directions,
+        int heatRate,
+        int heatDissipation
+) {
 
     public Weapon(
         Material material,
@@ -25,18 +26,22 @@ public class Weapon {
         this.heatDissipation = heatDissipation;
     }
 
+    @Deprecated(forRemoval = true)
     public Material getMaterial() {
         return material;
     }
 
+    @Deprecated(forRemoval = true)
     public byte[][] getDirections() {
         return directions;
     }
 
+    @Deprecated(forRemoval = true)
     public int getHeatRate() {
         return heatRate;
     }
 
+    @Deprecated(forRemoval = true)
     public int getHeatDissipation() {
         return heatDissipation;
     }
