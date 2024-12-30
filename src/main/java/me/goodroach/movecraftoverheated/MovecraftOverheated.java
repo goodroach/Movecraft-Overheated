@@ -1,10 +1,13 @@
 package me.goodroach.movecraftoverheated;
 
+import me.goodroach.movecraftoverheated.commands.CheckHeatCommand;
 import me.goodroach.movecraftoverheated.config.Settings;
 import me.goodroach.movecraftoverheated.listener.WeaponListener;
+import me.goodroach.movecraftoverheated.tracking.GraphManager;
 import me.goodroach.movecraftoverheated.tracking.WeaponHeatManager;
 import me.goodroach.movecraftoverheated.weapons.Weapon;
 import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -15,13 +18,17 @@ import java.util.Map;
 public final class MovecraftOverheated extends JavaPlugin {
     private static MovecraftOverheated instance;
     private WeaponHeatManager heatManager;
+    private GraphManager graphManager;
+    public static final NamespacedKey heatKey = new NamespacedKey(MovecraftOverheated.getInstance(), "heat");
+    public static final NamespacedKey craftKey = new NamespacedKey(MovecraftOverheated.getInstance(), "craft");
 
     @Override
     public void onEnable() {
         saveDefaultConfig();
         instance = this;
 
-        heatManager = new WeaponHeatManager();
+        graphManager = new GraphManager();
+        heatManager = new WeaponHeatManager(graphManager);
         heatManager.runTaskTimer(MovecraftOverheated.getInstance(), 0L, 1L); // Run every 20 ticks (1 second)
 
         //Listeners
@@ -29,6 +36,8 @@ public final class MovecraftOverheated extends JavaPlugin {
 
         // Plugin startup logic
         initConfig();
+
+        this.getCommand("checkheat").setExecutor(new CheckHeatCommand());
     }
 
     @Override
@@ -105,7 +114,7 @@ public final class MovecraftOverheated extends JavaPlugin {
                 int heatRate = (int) weaponData.getOrDefault("HeatRate", 0d);
                 int heatDissipation = (int) weaponData.getOrDefault("HeatDissipation", 0d);
 
-                heatManager.getWeapons().add(new Weapon(type, directions, heatRate, heatDissipation));
+                heatManager.addWeapon(new Weapon(type, directions, heatRate, heatDissipation));
             }
         }
     }

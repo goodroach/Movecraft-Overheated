@@ -42,7 +42,7 @@ public class BFSUtils {
 
                 for (int j = 0; j < size; j++) {
                     if (nodes.get(dispensers.get(j)).equals(next)) {
-                        adjMatrix[i][j] = 1;
+                        adjMatrix[i][j] += 1;
                     }
                 }
             }

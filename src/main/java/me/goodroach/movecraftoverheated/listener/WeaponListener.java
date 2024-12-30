@@ -1,5 +1,7 @@
 package me.goodroach.movecraftoverheated.listener;
 
+import me.goodroach.movecraftoverheated.tracking.DispenserGraph;
+import me.goodroach.movecraftoverheated.tracking.DispenserWeapon;
 import me.goodroach.movecraftoverheated.tracking.WeaponHeatManager;
 import me.goodroach.movecraftoverheated.weapons.Weapon;
 import org.bukkit.Material;
@@ -16,7 +18,6 @@ import java.util.Set;
 
 public class WeaponListener implements Listener {
     private WeaponHeatManager heatManager;
-    private Set<Weapon> weaponSet;
 
     public WeaponListener(WeaponHeatManager heatManager) {
         this.heatManager = heatManager;
@@ -26,14 +27,8 @@ public class WeaponListener implements Listener {
     public void onDispense(BlockDispenseEvent event) {
         ItemStack item = event.getItem();
 
-        Weapon firedWeapon = null;
-        for (Weapon weapon : heatManager.getWeapons()) {
-            if (item.getType() == weapon.getMaterial()) {
-                firedWeapon = weapon;
-            }
-        }
-
-        if (firedWeapon == null) {
+        DispenserGraph graph = heatManager.getWeapons().get(item.getType());
+        if (graph == null) {
             return;
         }
 
@@ -45,6 +40,6 @@ public class WeaponListener implements Listener {
         Block facingBlock = block.getRelative(((Dispenser) block.getBlockData()).getFacing());
         Vector nodeLoc = facingBlock.getLocation().toVector();
 
-        firedWeapon.addNode(block, nodeLoc);
+        graph.addDispenser(new DispenserWeapon(nodeLoc, block));
     }
 }
