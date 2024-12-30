@@ -65,8 +65,8 @@ public record Weapon(
         return new Weapon(
                 Material.valueOf(String.valueOf(args.getOrDefault("Material", "BEDROCK"))),
                 SerializationUtil.deserialize2dByteArray(args.getOrDefault("Directions", null)),
-                NumberConversions.toInt(args.get("HeatRate")),
-                NumberConversions.toInt(args.get("HeatDissipation"))
+                NumberConversions.toInt(args.getOrDefault("HeatRate", 0)),
+                NumberConversions.toInt(args.getOrDefault("HeatDissipation", 0))
         );
     }
 }
