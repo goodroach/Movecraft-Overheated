@@ -9,6 +9,7 @@ import me.goodroach.movecraftoverheated.weapons.Weapon;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.configuration.serialization.ConfigurationSerialization;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.ArrayList;
@@ -21,6 +22,12 @@ public final class MovecraftOverheated extends JavaPlugin {
     private GraphManager graphManager;
     public static final NamespacedKey heatKey = new NamespacedKey(MovecraftOverheated.getInstance(), "heat");
     public static final NamespacedKey craftKey = new NamespacedKey(MovecraftOverheated.getInstance(), "craft");
+
+    static {
+        // TODO: Test, then uncomment
+        // Once this works, config parsing needs to be changed (see further down)
+        // ConfigurationSerialization.registerClass(Weapon.class, "OverheatWeapon");
+    }
 
     @Override
     public void onEnable() {
@@ -75,6 +82,12 @@ public final class MovecraftOverheated extends JavaPlugin {
             }
         }
         if (getConfig().contains("Weapons")) {
+            // Once Weapon serialization is tested and works, replace the parsing code with the following call:
+            /*
+            List<Weapon> weapons = (List<Weapon>) getConfig().getList("Weapons");
+            weapons.forEach(heatManager::addWeapon);
+             */
+            
             Map<String, Object> tempMap = getConfig().getConfigurationSection("Weapons").getValues(false);
             for (String str : tempMap.keySet()) {
                 Material type;
