@@ -35,17 +35,13 @@ public class Keys {
         CraftType.registerProperty(
                 new ObjectPropertyImpl("WeaponHeatRateMultiplier", WEAPON_HEAT_RATE_MULTIPLIER,
                         materialDoubleMap,
-                        type -> {
-                            return Map.<Material, Double>of();
-                        }
+                        type -> Map.<Material, Double>of()
                 )
         );
         CraftType.registerProperty(
                 new ObjectPropertyImpl("WeaponHeatDissipationMultiplier", WEAPON_HEAT_DISSAPATION_MULTIPLIER,
                         materialDoubleMap,
-                        type -> {
-                            return Map.<Material, Double>of();
-                        }
+                        type -> Map.<Material, Double>of()
                 )
         );
     }
