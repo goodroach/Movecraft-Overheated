@@ -30,7 +30,7 @@ public class DispenserGraph {
 
         for (DispenserWeapon dispenser1 : adjList.keySet()) {
             current = dispenser1.vector();
-            for (byte[] dir : weapon.getDirections()) {
+            for (byte[] dir : weapon.directions()) {
                 next = current.clone().add(new Vector(dir[0], dir[1], dir[2]));
                 for (DispenserWeapon dispenser2 : adjList.keySet()) {
                     if (dispenser2.vector().equals(next)) {

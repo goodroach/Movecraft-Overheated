@@ -85,6 +85,9 @@ public class WeaponHeatManager extends BukkitRunnable implements Listener {
         trackedDispensers.add(dispenserWeapon);
     }
 
+    private void checkDisaster(Weapon weapon) {
+    }
+
     private void coolDispensers(Weapon weapon) {
         if (trackedDispensers.isEmpty()) {
             return;
@@ -92,7 +95,7 @@ public class WeaponHeatManager extends BukkitRunnable implements Listener {
 
         for (DispenserWeapon dispenser : trackedDispensers) {
             // Negative value as it is removing heat
-            setDispenserHeat(dispenser, -1 * weapon.getHeatDissipation());
+            setDispenserHeat(dispenser, -1 * weapon.heatDissipation());
         }
     }
 
@@ -100,7 +103,7 @@ public class WeaponHeatManager extends BukkitRunnable implements Listener {
         for (List<DispenserWeapon> dispenserTree : forest) {
             System.out.println("Dispenser tree size: " + dispenserTree.size());
             for (DispenserWeapon dispenser : dispenserTree) {
-                setDispenserHeat(dispenser, dispenserTree.size() * weapon.getHeatRate());
+                setDispenserHeat(dispenser, dispenserTree.size() * weapon.heatRate());
             }
         }
     }
@@ -110,6 +113,6 @@ public class WeaponHeatManager extends BukkitRunnable implements Listener {
     }
 
     public void addWeapon(Weapon weapon) {
-        weapons.put(weapon.getMaterial(), new DispenserGraph(weapon));
+        weapons.put(weapon.material(), new DispenserGraph(weapon));
     }
 }

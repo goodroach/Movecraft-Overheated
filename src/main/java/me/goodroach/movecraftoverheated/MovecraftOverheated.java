@@ -2,6 +2,7 @@ package me.goodroach.movecraftoverheated;
 
 import me.goodroach.movecraftoverheated.commands.CheckHeatCommand;
 import me.goodroach.movecraftoverheated.config.Settings;
+import me.goodroach.movecraftoverheated.disaster.ExplosionDisaster;
 import me.goodroach.movecraftoverheated.listener.WeaponListener;
 import me.goodroach.movecraftoverheated.tracking.GraphManager;
 import me.goodroach.movecraftoverheated.tracking.WeaponHeatManager;
@@ -13,6 +14,7 @@ import org.bukkit.configuration.serialization.ConfigurationSerialization;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -20,19 +22,21 @@ public final class MovecraftOverheated extends JavaPlugin {
     private static MovecraftOverheated instance;
     private WeaponHeatManager heatManager;
     private GraphManager graphManager;
-    public static final NamespacedKey heatKey = new NamespacedKey(MovecraftOverheated.getInstance(), "heat");
-    public static final NamespacedKey craftKey = new NamespacedKey(MovecraftOverheated.getInstance(), "craft");
-
-    static {
-        // TODO: Test, then uncomment
-        // Once this works, config parsing needs to be changed (see further down)
-        // ConfigurationSerialization.registerClass(Weapon.class, "OverheatWeapon");
-    }
+    public static NamespacedKey heatKey;
+    public static NamespacedKey craftKey;
 
     @Override
     public void onEnable() {
-        saveDefaultConfig();
         instance = this;
+        heatKey = new NamespacedKey(instance, "heat");
+        craftKey = new NamespacedKey(instance, "craft");
+
+        // TODO: Test, then uncomment
+        // Once this works, config parsing needs to be changed (see further down)
+        ConfigurationSerialization.registerClass(Weapon.class, "OverheatWeapon");
+        ConfigurationSerialization.registerClass(ExplosionDisaster.class, "ExplosionDisaster");
+
+        saveDefaultConfig();
 
         graphManager = new GraphManager();
         heatManager = new WeaponHeatManager(graphManager);
@@ -45,6 +49,7 @@ public final class MovecraftOverheated extends JavaPlugin {
         initConfig();
 
         this.getCommand("checkheat").setExecutor(new CheckHeatCommand());
+
     }
 
     @Override
@@ -81,54 +86,10 @@ public final class MovecraftOverheated extends JavaPlugin {
                 Settings.RadiatorBlocks.put(type,(Double)tempMap.get(str));
             }
         }
+
         if (getConfig().contains("Weapons")) {
-            // Once Weapon serialization is tested and works, replace the parsing code with the following call:
-            /*
             List<Weapon> weapons = (List<Weapon>) getConfig().getList("Weapons");
             weapons.forEach(heatManager::addWeapon);
-             */
-            
-            Map<String, Object> tempMap = getConfig().getConfigurationSection("Weapons").getValues(false);
-            for (String str : tempMap.keySet()) {
-                Material type;
-                try {
-                    type = Material.getMaterial(str);
-                }
-                catch(NumberFormatException e) {
-                    type = Material.getMaterial(str);
-                }
-
-                System.out.println("Material type is: " + type.toString());
-
-                // Get the directions relative to the block the dispenser outputs to.
-                ConfigurationSection weaponSection = getConfig().getConfigurationSection("Weapons." + str);
-                List<String> directionStrings = weaponSection.getStringList("Directions");
-                List<byte[]> tempDirections = new ArrayList<>();
-                for (String dir : directionStrings) {
-                    try {
-                        String[] parts = dir.split(",\\s*"); // Split by comma and optional spaces
-                        if (parts.length != 3) {
-                            throw new IllegalArgumentException("Invalid vector format: " + str);
-                        }
-                        byte x = Byte.parseByte(parts[0]);
-                        byte y = Byte.parseByte(parts[1]);
-                        byte z = Byte.parseByte(parts[2]);
-                        tempDirections.add(new byte[] {x, y, z});
-                    } catch (NumberFormatException e) {
-                        throw new IllegalArgumentException("Invalid number in vector: " + str, e);
-                    }
-                }
-                byte[][] directions = new byte[tempDirections.size()][];
-                for (int i = 0; i < tempDirections.size(); i++) {
-                    directions[i] = tempDirections.get(i);
-                }
-
-                Map<String, Object> weaponData = ((ConfigurationSection) tempMap.get(str)).getValues(false);
-                int heatRate = (int) weaponData.getOrDefault("HeatRate", 0d);
-                int heatDissipation = (int) weaponData.getOrDefault("HeatDissipation", 0d);
-
-                heatManager.addWeapon(new Weapon(type, directions, heatRate, heatDissipation));
-            }
         }
     }
 
