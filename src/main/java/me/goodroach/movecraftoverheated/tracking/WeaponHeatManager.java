@@ -14,13 +14,14 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import static me.goodroach.movecraftoverheated.MovecraftOverheated.heatKey;
 
 public class WeaponHeatManager extends BukkitRunnable implements Listener {
     private final GraphManager graphManager;
     private Map<Material, DispenserGraph> weapons = new HashMap<>();
-    private Set<DispenserWeapon> trackedDispensers = new HashSet<>();
+    private final Set<DispenserWeapon> trackedDispensers = ConcurrentHashMap.newKeySet();
 
     public WeaponHeatManager(GraphManager graphManager) {
         this.graphManager = graphManager;
@@ -75,14 +76,15 @@ public class WeaponHeatManager extends BukkitRunnable implements Listener {
 
         // Cleans the data container and the list of tracked dispensers.
         if (amount <= 0) {
-            trackedDispensers.remove(dispenser);
+            trackedDispensers.remove(dispenserWeapon);
             dataContainer.remove(heatKey);
             System.out.println("Amount is determined to be less than zero, removing data.");
+        } else {
+            dataContainer.set(heatKey, PersistentDataType.INTEGER, amount);
+            trackedDispensers.add(dispenserWeapon);
         }
 
-        dataContainer.set(heatKey, PersistentDataType.INTEGER, amount);
         state.update();
-        trackedDispensers.add(dispenserWeapon);
     }
 
     private void checkDisaster(Weapon weapon) {
