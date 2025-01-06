@@ -59,7 +59,7 @@ public class WeaponHeatManager extends BukkitRunnable implements Listener {
             throw new IllegalArgumentException("DispenserWeapon cannot be null");
         }
 
-        Block dispenser = dispenserWeapon.block();
+        Block dispenser = dispenserWeapon.getLocation().getBlock();
         TileState state = (TileState) dispenser.getState();
         PersistentDataContainer dataContainer = state.getPersistentDataContainer();
 

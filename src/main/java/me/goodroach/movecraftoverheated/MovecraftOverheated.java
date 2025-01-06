@@ -23,13 +23,13 @@ public final class MovecraftOverheated extends JavaPlugin {
     private WeaponHeatManager heatManager;
     private GraphManager graphManager;
     public static NamespacedKey heatKey;
-    public static NamespacedKey craftKey;
+    public static NamespacedKey craftHeatKey;
 
     @Override
     public void onEnable() {
         instance = this;
         heatKey = new NamespacedKey(instance, "heat");
-        craftKey = new NamespacedKey(instance, "craft");
+        craftHeatKey = new NamespacedKey(instance, "craft_heat");
 
         // TODO: Test, then uncomment
         // Once this works, config parsing needs to be changed (see further down)
