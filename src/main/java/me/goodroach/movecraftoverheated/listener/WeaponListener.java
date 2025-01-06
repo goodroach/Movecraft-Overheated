@@ -40,6 +40,6 @@ public class WeaponListener implements Listener {
         Block facingBlock = block.getRelative(((Dispenser) block.getBlockData()).getFacing());
         Vector nodeLoc = facingBlock.getLocation().toVector();
 
-        graph.addDispenser(new DispenserWeapon(nodeLoc, block));
+        graph.addDispenser(new DispenserWeapon(nodeLoc, block.getLocation()));
     }
 }

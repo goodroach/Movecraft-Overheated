@@ -29,11 +29,11 @@ public class DispenserGraph {
         Vector next;
 
         for (DispenserWeapon dispenser1 : adjList.keySet()) {
-            current = dispenser1.vector();
-            for (byte[] dir : weapon.getDirections()) {
+            current = dispenser1.getVector();
+            for (byte[] dir : weapon.directions()) {
                 next = current.clone().add(new Vector(dir[0], dir[1], dir[2]));
                 for (DispenserWeapon dispenser2 : adjList.keySet()) {
-                    if (dispenser2.vector().equals(next)) {
+                    if (dispenser2.getVector().equals(next)) {
                         adjList.computeIfAbsent(dispenser1, k -> new ArrayList<>()).add(dispenser2);
                     }
                 }

@@ -14,13 +14,14 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import static me.goodroach.movecraftoverheated.MovecraftOverheated.heatKey;
 
 public class WeaponHeatManager extends BukkitRunnable implements Listener {
     private final GraphManager graphManager;
     private Map<Material, DispenserGraph> weapons = new HashMap<>();
-    private Set<DispenserWeapon> trackedDispensers = new HashSet<>();
+    private final Set<DispenserWeapon> trackedDispensers = ConcurrentHashMap.newKeySet();
 
     public WeaponHeatManager(GraphManager graphManager) {
         this.graphManager = graphManager;
@@ -58,7 +59,7 @@ public class WeaponHeatManager extends BukkitRunnable implements Listener {
             throw new IllegalArgumentException("DispenserWeapon cannot be null");
         }
 
-        Block dispenser = dispenserWeapon.block();
+        Block dispenser = dispenserWeapon.getLocation().getBlock();
         TileState state = (TileState) dispenser.getState();
         PersistentDataContainer dataContainer = state.getPersistentDataContainer();
 
@@ -75,14 +76,18 @@ public class WeaponHeatManager extends BukkitRunnable implements Listener {
 
         // Cleans the data container and the list of tracked dispensers.
         if (amount <= 0) {
-            trackedDispensers.remove(dispenser);
+            trackedDispensers.remove(dispenserWeapon);
             dataContainer.remove(heatKey);
             System.out.println("Amount is determined to be less than zero, removing data.");
+        } else {
+            dataContainer.set(heatKey, PersistentDataType.INTEGER, amount);
+            trackedDispensers.add(dispenserWeapon);
         }
 
-        dataContainer.set(heatKey, PersistentDataType.INTEGER, amount);
         state.update();
-        trackedDispensers.add(dispenserWeapon);
+    }
+
+    private void checkDisaster(Weapon weapon) {
     }
 
     private void coolDispensers(Weapon weapon) {
@@ -92,7 +97,7 @@ public class WeaponHeatManager extends BukkitRunnable implements Listener {
 
         for (DispenserWeapon dispenser : trackedDispensers) {
             // Negative value as it is removing heat
-            setDispenserHeat(dispenser, -1 * weapon.getHeatDissipation());
+            setDispenserHeat(dispenser, -1 * weapon.heatDissipation());
         }
     }
 
@@ -100,7 +105,7 @@ public class WeaponHeatManager extends BukkitRunnable implements Listener {
         for (List<DispenserWeapon> dispenserTree : forest) {
             System.out.println("Dispenser tree size: " + dispenserTree.size());
             for (DispenserWeapon dispenser : dispenserTree) {
-                setDispenserHeat(dispenser, dispenserTree.size() * weapon.getHeatRate());
+                setDispenserHeat(dispenser, dispenserTree.size() * weapon.heatRate());
             }
         }
     }
@@ -110,6 +115,6 @@ public class WeaponHeatManager extends BukkitRunnable implements Listener {
     }
 
     public void addWeapon(Weapon weapon) {
-        weapons.put(weapon.getMaterial(), new DispenserGraph(weapon));
+        weapons.put(weapon.material(), new DispenserGraph(weapon));
     }
 }

@@ -1,5 +1,6 @@
 package me.goodroach.movecraftoverheated.tracking;
 
+import me.goodroach.movecraftoverheated.disaster.BaseDisaster;
 import me.goodroach.movecraftoverheated.weapons.Weapon;
 import net.countercraft.movecraft.TrackedLocation;
 import net.countercraft.movecraft.craft.Craft;
