@@ -11,6 +11,7 @@ import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.util.Vector;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.HashSet;
 
@@ -31,10 +32,17 @@ public class DispenserWeapon {
         return vector;
     }
 
-    public void bindToCraft() {
-        Craft craft = MathUtils.fastNearestCraftToLoc(CraftManager.getInstance().getCrafts(), absolute);
-        if (!MathUtils.locationInHitBox(craft.getHitBox(), absolute) || craft == null) {
-            return;
+    public boolean bindToCraft(@Nullable Craft craft) {
+        // First check looks for a craft in case the input is null.
+        if (craft == null) {
+            craft = MathUtils.fastNearestCraftToLoc(CraftManager.getInstance().getCrafts(), absolute);
+        }
+        // Second check ensures that there is a craft within the vicinity.
+        if (craft == null) {
+            return false;
+        }
+        if (!MathUtils.locationInHitBox(craft.getHitBox(), absolute)) {
+            return false;
         }
 
         this.craft = craft;
@@ -43,6 +51,7 @@ public class DispenserWeapon {
             craft.getTrackedLocations().put(craftHeatKey, new HashSet<>());
         }
         craft.getTrackedLocations().get(craftHeatKey).add(tracked);
+        return true;
     }
 
     public Location getLocation() {

@@ -117,4 +117,8 @@ public class WeaponHeatManager extends BukkitRunnable implements Listener {
     public void addWeapon(Weapon weapon) {
         weapons.put(weapon.material(), new DispenserGraph(weapon));
     }
+
+    public Set<DispenserWeapon> getTrackedDispensers() {
+        return trackedDispensers;
+    }
 }
