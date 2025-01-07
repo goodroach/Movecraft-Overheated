@@ -1,27 +1,24 @@
 package me.goodroach.movecraftoverheated.commands;
 
-import me.goodroach.movecraftoverheated.tracking.DispenserWeapon;
 import me.goodroach.movecraftoverheated.tracking.WeaponHeatManager;
 import net.countercraft.movecraft.util.ChatUtils;
 import net.kyori.adventure.text.Component;
 import org.bukkit.FluidCollisionMode;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
-import org.bukkit.block.data.type.Dispenser;
+import org.bukkit.block.TileState;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.persistence.PersistentDataContainer;
+import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.util.RayTraceResult;
-import org.bukkit.util.Vector;
 import org.jetbrains.annotations.NotNull;
 
-public class CheckHeatCommand implements CommandExecutor {
-    private final WeaponHeatManager heatManager;
+import static me.goodroach.movecraftoverheated.MovecraftOverheated.heatKey;
 
-    public CheckHeatCommand(WeaponHeatManager heatManager) {
-        this.heatManager = heatManager;
-    }
+public class CheckHeatCommand implements CommandExecutor {
 
     @Override
     public boolean onCommand(
@@ -52,11 +49,15 @@ public class CheckHeatCommand implements CommandExecutor {
             return true;
         }
 
-        Block facingBlock = dispenser.getRelative(((Dispenser) dispenser.getBlockData()).getFacing());
-        Vector nodeLoc = facingBlock.getLocation().toVector();
-        DispenserWeapon read = new DispenserWeapon(nodeLoc, dispenser.getLocation());
-        System.out.println(heatManager.getTrackedDispensers().size());
-        int heat = heatManager.getTrackedDispensers().get(read.hashCode()).getHeatValue();
+        TileState state = (TileState) dispenser.getState();
+        PersistentDataContainer container = state.getPersistentDataContainer();
+        if (container.get(heatKey, PersistentDataType.INTEGER) == null) {
+            baseMessage = baseMessage.append(Component.text("Current dispenser heat at: 0"));
+            player.sendMessage(baseMessage);
+            return true;
+        }
+
+        int heat = container.get(heatKey, PersistentDataType.INTEGER);
         baseMessage = baseMessage.append(Component.text("Current dispenser heat at: "))
             .append(Component.text(heat));
         player.sendMessage(baseMessage);
