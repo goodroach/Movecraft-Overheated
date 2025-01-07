@@ -3,18 +3,16 @@ package me.goodroach.movecraftoverheated;
 import me.goodroach.movecraftoverheated.commands.CheckHeatCommand;
 import me.goodroach.movecraftoverheated.config.Settings;
 import me.goodroach.movecraftoverheated.disaster.ExplosionDisaster;
+import me.goodroach.movecraftoverheated.listener.CraftListener;
 import me.goodroach.movecraftoverheated.listener.WeaponListener;
 import me.goodroach.movecraftoverheated.tracking.GraphManager;
 import me.goodroach.movecraftoverheated.tracking.WeaponHeatManager;
 import me.goodroach.movecraftoverheated.weapons.Weapon;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
-import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.serialization.ConfigurationSerialization;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -44,11 +42,12 @@ public final class MovecraftOverheated extends JavaPlugin {
 
         //Listeners
         getServer().getPluginManager().registerEvents(new WeaponListener(heatManager), this);
+        getServer().getPluginManager().registerEvents(new CraftListener(heatManager), this);
 
         // Plugin startup logic
         initConfig();
 
-        this.getCommand("checkheat").setExecutor(new CheckHeatCommand());
+        this.getCommand("checkheat").setExecutor(new CheckHeatCommand(heatManager));
 
     }
 
