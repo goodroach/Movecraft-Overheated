@@ -10,7 +10,6 @@ import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -83,6 +82,33 @@ public class WeaponHeatManager extends BukkitRunnable implements Listener {
         state.update();
     }
 
+    public void addDispenserHeat(DispenserWeapon dispenserWeapon, int amount) {
+        if (dispenserWeapon == null) {
+            throw new IllegalArgumentException("DispenserWeapon cannot be null");
+        }
+
+        Block dispenser = dispenserWeapon.getLocation().getBlock();
+        if (dispenser.getType() != Material.DISPENSER) {
+            trackedDispensers.remove(dispenserWeapon);
+            return;
+        }
+
+        amount += dispenserWeapon.getHeatValue();
+
+        if (trackedDispensers.contains(dispenserWeapon)) {
+            System.out.println("Tracked dispensers does contain this dispenser weapon.");
+        }
+
+        // Cleans the data container and the list of tracked dispensers.
+        if (amount <= 0) {
+            trackedDispensers.remove(dispenserWeapon);
+        } else {
+            trackedDispensers.add(dispenserWeapon);
+        }
+
+        dispenserWeapon.setHeatValue(amount);
+    }
+
     private void checkDisaster(Weapon weapon) {
     }
 
@@ -93,14 +119,14 @@ public class WeaponHeatManager extends BukkitRunnable implements Listener {
 
         for (DispenserWeapon dispenser : trackedDispensers) {
             // Negative value as it is removing heat
-            setDispenserHeat(dispenser, -1 * weapon.heatDissipation());
+            addDispenserHeat(dispenser, -1 * weapon.heatDissipation());
         }
     }
 
     private void setHeatFromForest(List<List<DispenserWeapon>> forest, Weapon weapon) {
         for (List<DispenserWeapon> dispenserTree : forest) {
             for (DispenserWeapon dispenser : dispenserTree) {
-                setDispenserHeat(dispenser, dispenserTree.size() * weapon.heatRate());
+                addDispenserHeat(dispenser, dispenserTree.size() * weapon.heatRate());
             }
         }
     }

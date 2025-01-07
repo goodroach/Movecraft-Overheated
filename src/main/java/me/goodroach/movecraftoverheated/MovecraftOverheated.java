@@ -10,12 +10,9 @@ import me.goodroach.movecraftoverheated.tracking.WeaponHeatManager;
 import me.goodroach.movecraftoverheated.weapons.Weapon;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
-import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.serialization.ConfigurationSerialization;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -50,7 +47,7 @@ public final class MovecraftOverheated extends JavaPlugin {
         // Plugin startup logic
         initConfig();
 
-        this.getCommand("checkheat").setExecutor(new CheckHeatCommand());
+        this.getCommand("checkheat").setExecutor(new CheckHeatCommand(heatManager));
 
     }
 
