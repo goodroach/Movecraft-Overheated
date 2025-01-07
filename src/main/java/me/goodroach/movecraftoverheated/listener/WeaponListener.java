@@ -3,7 +3,6 @@ package me.goodroach.movecraftoverheated.listener;
 import me.goodroach.movecraftoverheated.tracking.DispenserGraph;
 import me.goodroach.movecraftoverheated.tracking.DispenserWeapon;
 import me.goodroach.movecraftoverheated.tracking.WeaponHeatManager;
-import me.goodroach.movecraftoverheated.weapons.Weapon;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.TileState;
@@ -21,7 +20,6 @@ import java.util.Set;
 import java.util.UUID;
 
 import static me.goodroach.movecraftoverheated.MovecraftOverheated.dispenserHeatUUID;
-
 public class WeaponListener implements Listener {
     private WeaponHeatManager heatManager;
 

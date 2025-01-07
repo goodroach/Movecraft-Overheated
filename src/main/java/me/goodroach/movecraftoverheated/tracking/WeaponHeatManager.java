@@ -54,9 +54,44 @@ public class WeaponHeatManager extends BukkitRunnable implements Listener {
      *               the heat and remove the dispenser from tracking.
      * @throws IllegalArgumentException If the dispenser weapon's block is not of type {@link Material#DISPENSER}.
      */
-    public void setDispenserHeat(DispenserWeapon dispenserWeapon, int amount) {
+//    public void setDispenserHeat(DispenserWeapon dispenserWeapon, int amount) {
+//        if (dispenserWeapon == null) {
+//            throw new IllegalArgumentException("DispenserWeapon cannot be null");
+//        }
+//
+//        Block dispenser = dispenserWeapon.getLocation().getBlock();
+//        TileState state = (TileState) dispenser.getState();
+//        PersistentDataContainer dataContainer = state.getPersistentDataContainer();
+//
+//        // This resets the dispenser's tile state if the plugin did not track it due to a crash or a bug.
+//        if (!trackedDispensers.contains(dispenserWeapon)) {
+//            dataContainer.remove(heatKey);
+//        }
+//
+//        int currentAmount = dataContainer.getOrDefault(heatKey, PersistentDataType.INTEGER, 0);
+//        amount += currentAmount;
+//
+//        // Cleans the data container and the list of tracked dispensers.
+//        if (amount <= 0) {
+//            trackedDispensers.remove(dispenserWeapon);
+//            dataContainer.remove(heatKey);
+//        } else {
+//            dataContainer.set(heatKey, PersistentDataType.INTEGER, amount);
+//            trackedDispensers.add(dispenserWeapon);
+//        }
+//
+//        state.update();
+//    }
+
+    public void addDispenserHeat(DispenserWeapon dispenserWeapon, int amount) {
         if (dispenserWeapon == null) {
             throw new IllegalArgumentException("DispenserWeapon cannot be null");
+        }
+
+        // Check if the dispenserWeapon is already in the map, and if so, get the existing one
+        DispenserWeapon existingWeapon = trackedDispensers.get(dispenserWeapon.hashCode());
+        if (existingWeapon != null) {
+            dispenserWeapon = existingWeapon; // Reuse the existing dispenserWeapon object
         }
 
         Block dispenser = dispenserWeapon.getLocation().getBlock();
@@ -85,9 +120,8 @@ public class WeaponHeatManager extends BukkitRunnable implements Listener {
             dataContainer.set(heatKey, PersistentDataType.INTEGER, amount);
             trackedDispensers.put(dispenserWeapon.getUuid(), dispenserWeapon);
         }
-
-        state.update();
     }
+
 
     private void checkDisaster(Weapon weapon) {
     }
@@ -99,14 +133,14 @@ public class WeaponHeatManager extends BukkitRunnable implements Listener {
 
         for (DispenserWeapon dispenser : trackedDispensers.values()) {
             // Negative value as it is removing heat
-            setDispenserHeat(dispenser, -1 * weapon.heatDissipation());
+            addDispenserHeat(dispenser, -1 * weapon.heatDissipation());
         }
     }
 
     private void setHeatFromForest(List<List<DispenserWeapon>> forest, Weapon weapon) {
         for (List<DispenserWeapon> dispenserTree : forest) {
             for (DispenserWeapon dispenser : dispenserTree) {
-                setDispenserHeat(dispenser, dispenserTree.size() * weapon.heatRate());
+                addDispenserHeat(dispenser, dispenserTree.size() * weapon.heatRate());
             }
         }
     }

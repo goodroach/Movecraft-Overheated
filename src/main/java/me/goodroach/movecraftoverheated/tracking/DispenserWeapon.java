@@ -1,15 +1,11 @@
 package me.goodroach.movecraftoverheated.tracking;
 
-import me.goodroach.movecraftoverheated.weapons.Weapon;
-import net.countercraft.movecraft.MovecraftLocation;
+import me.goodroach.movecraftoverheated.config.Keys;
 import net.countercraft.movecraft.TrackedLocation;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.util.MathUtils;
 import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.World;
-import org.bukkit.block.Block;
 import org.bukkit.util.Vector;
 import org.jetbrains.annotations.Nullable;
 
@@ -18,6 +14,7 @@ import java.util.Objects;
 import java.util.UUID;
 
 import static me.goodroach.movecraftoverheated.MovecraftOverheated.craftHeatKey;
+import static me.goodroach.movecraftoverheated.config.Keys.BASE_HEAT_CAPACITY;
 
 public class DispenserWeapon {
     private final Vector vector;
@@ -25,6 +22,8 @@ public class DispenserWeapon {
     private final UUID uuid;
     private TrackedLocation tracked;
     private Craft craft;
+    private int heatValue;
+    private int heatCapacity;
 
     public DispenserWeapon(Vector vector, Location absolute) {
         this.vector = vector;
@@ -63,7 +62,6 @@ public class DispenserWeapon {
     public UUID getUuid() {
         return uuid;
     }
-
     @Override
     public boolean equals(Object obj) {
         if (this == obj) return true;
