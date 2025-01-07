@@ -10,18 +10,18 @@ import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
+import static me.goodroach.movecraftoverheated.MovecraftOverheated.dispenserHeatUUID;
 import static me.goodroach.movecraftoverheated.MovecraftOverheated.heatKey;
 
 public class WeaponHeatManager extends BukkitRunnable implements Listener {
     private final GraphManager graphManager;
     private Map<Material, DispenserGraph> weapons = new HashMap<>();
-    private final Set<DispenserWeapon> trackedDispensers = ConcurrentHashMap.newKeySet();
+    private final Map<UUID, DispenserWeapon> trackedDispensers = new ConcurrentHashMap();
 
     public WeaponHeatManager(GraphManager graphManager) {
         this.graphManager = graphManager;
@@ -31,7 +31,7 @@ public class WeaponHeatManager extends BukkitRunnable implements Listener {
     public void run() {
         long time = System.currentTimeMillis();
         for (DispenserGraph graph : weapons.values()) {
-            coolDispensers(graph.getWeapon());
+            //coolDispensers(graph.getWeapon());
 
             List<List<DispenserWeapon>> dispenserForest = graphManager.getForest(graph);
 
@@ -64,20 +64,26 @@ public class WeaponHeatManager extends BukkitRunnable implements Listener {
         PersistentDataContainer dataContainer = state.getPersistentDataContainer();
 
         // This resets the dispenser's tile state if the plugin did not track it due to a crash or a bug.
-        if (!trackedDispensers.contains(dispenserWeapon)) {
+        if (!trackedDispensers.containsValue(dispenserWeapon)) {
             dataContainer.remove(heatKey);
+            dataContainer.remove(dispenserHeatUUID);
+            System.out.println("Dispenser not found in plugin, removing previous data.");
         }
 
         int currentAmount = dataContainer.getOrDefault(heatKey, PersistentDataType.INTEGER, 0);
+        System.out.println("The current amount is set to: " + currentAmount);
         amount += currentAmount;
+        System.out.println("The new amount is set to: " + amount);
 
         // Cleans the data container and the list of tracked dispensers.
         if (amount <= 0) {
             trackedDispensers.remove(dispenserWeapon);
             dataContainer.remove(heatKey);
+            dataContainer.remove(dispenserHeatUUID);
+            System.out.println("Amount is determeined to be less than zero, removing data.");
         } else {
             dataContainer.set(heatKey, PersistentDataType.INTEGER, amount);
-            trackedDispensers.add(dispenserWeapon);
+            trackedDispensers.put(dispenserWeapon.getUuid(), dispenserWeapon);
         }
 
         state.update();
@@ -91,7 +97,7 @@ public class WeaponHeatManager extends BukkitRunnable implements Listener {
             return;
         }
 
-        for (DispenserWeapon dispenser : trackedDispensers) {
+        for (DispenserWeapon dispenser : trackedDispensers.values()) {
             // Negative value as it is removing heat
             setDispenserHeat(dispenser, -1 * weapon.heatDissipation());
         }
@@ -113,7 +119,7 @@ public class WeaponHeatManager extends BukkitRunnable implements Listener {
         weapons.put(weapon.material(), new DispenserGraph(weapon));
     }
 
-    public Set<DispenserWeapon> getTrackedDispensers() {
+    public Map<UUID, DispenserWeapon> getTrackedDispensers() {
         return trackedDispensers;
     }
 }

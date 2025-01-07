@@ -25,12 +25,14 @@ public final class MovecraftOverheated extends JavaPlugin {
     private GraphManager graphManager;
     public static NamespacedKey heatKey;
     public static NamespacedKey craftHeatKey;
+    public static NamespacedKey dispenserHeatUUID;
 
     @Override
     public void onEnable() {
         instance = this;
         heatKey = new NamespacedKey(instance, "heat");
         craftHeatKey = new NamespacedKey(instance, "craft_heat");
+        dispenserHeatUUID = new NamespacedKey(instance, "dispenser_heat_uuid");
 
         // TODO: Test, then uncomment
         // Once this works, config parsing needs to be changed (see further down)

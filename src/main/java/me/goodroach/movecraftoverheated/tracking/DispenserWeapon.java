@@ -14,18 +14,22 @@ import org.bukkit.util.Vector;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.HashSet;
+import java.util.Objects;
+import java.util.UUID;
 
 import static me.goodroach.movecraftoverheated.MovecraftOverheated.craftHeatKey;
 
 public class DispenserWeapon {
     private final Vector vector;
-    private Location absolute;
+    private final Location absolute;
+    private final UUID uuid;
     private TrackedLocation tracked;
     private Craft craft;
 
     public DispenserWeapon(Vector vector, Location absolute) {
         this.vector = vector;
         this.absolute = absolute;
+        uuid = UUID.randomUUID();
     }
 
     public Vector getVector() {
@@ -33,15 +37,10 @@ public class DispenserWeapon {
     }
 
     public boolean bindToCraft(@Nullable Craft craft) {
-        // First check looks for a craft in case the input is null.
         if (craft == null) {
-            craft = MathUtils.fastNearestCraftToLoc(CraftManager.getInstance().getCrafts(), absolute);
+            craft = MathUtils.getCraftByPersistentBlockData(absolute);
         }
-        // Second check ensures that there is a craft within the vicinity.
         if (craft == null) {
-            return false;
-        }
-        if (!MathUtils.locationInHitBox(craft.getHitBox(), absolute)) {
             return false;
         }
 
@@ -59,5 +58,22 @@ public class DispenserWeapon {
             return absolute;
         }
         return tracked.getAbsoluteLocation().toBukkit(craft.getWorld());
+    }
+
+    public UUID getUuid() {
+        return uuid;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (obj == null || getClass() != obj.getClass()) return false;
+        DispenserWeapon that = (DispenserWeapon) obj;
+        return this.getLocation().equals(that.getLocation()) && this.getVector().equals(that.getVector());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(getLocation(), getVector());
     }
 }
