@@ -15,7 +15,7 @@ public class CraftListener implements Listener {
 
     @EventHandler
     public void onCraftPilot(CraftDetectEvent event){
-        for (DispenserWeapon dispenser : heatManager.getTrackedDispensers()) {
+        for (DispenserWeapon dispenser : heatManager.getTrackedDispensers().values()) {
             dispenser.bindToCraft(event.getCraft());
         }
     }

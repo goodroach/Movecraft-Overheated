@@ -10,6 +10,7 @@ import org.bukkit.util.Vector;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.HashSet;
+import java.util.Objects;
 
 import static me.goodroach.movecraftoverheated.MovecraftOverheated.craftHeatKey;
 import static me.goodroach.movecraftoverheated.config.Keys.BASE_HEAT_CAPACITY;
@@ -91,19 +92,11 @@ public class DispenserWeapon {
         if (this == obj) return true;
         if (obj == null || getClass() != obj.getClass()) return false;
         DispenserWeapon that = (DispenserWeapon) obj;
-        Location thisLocation = this.getLocation();
-        Location thatLocation = that.getLocation();
-        boolean locationsEqual = (thisLocation != null && thisLocation.equals(thatLocation));
-        boolean vectorsEqual = (this.vector != null && this.vector.equals(that.vector));
-        return locationsEqual && vectorsEqual;
+        return this.getLocation().equals(that.getLocation()) && this.vector.equals(that.vector);
     }
 
     @Override
     public int hashCode() {
-        // Use both the Location and the Vector to compute the hash code
-        Location currentLocation = this.getLocation();
-        int locationHash = (currentLocation != null) ? currentLocation.hashCode() : 0;
-        int vectorHash = (this.vector != null) ? this.vector.hashCode() : 0;
-        return 31 * locationHash + vectorHash;
+        return Objects.hash(getLocation(), vector);
     }
 }

@@ -55,14 +55,11 @@ public class CheckHeatCommand implements CommandExecutor {
         Block facingBlock = dispenser.getRelative(((Dispenser) dispenser.getBlockData()).getFacing());
         Vector nodeLoc = facingBlock.getLocation().toVector();
         DispenserWeapon read = new DispenserWeapon(nodeLoc, dispenser.getLocation());
-        for (DispenserWeapon dispenserWeapon : heatManager.getTrackedDispensers()) {
-            if (dispenserWeapon.equals(read)) {
-                int heat = dispenserWeapon.getHeatValue();
-                baseMessage = baseMessage.append(Component.text("Current dispenser heat at: "))
-                    .append(Component.text(heat));
-                player.sendMessage(baseMessage);
-            }
-        }
+        System.out.println(heatManager.getTrackedDispensers().size());
+        int heat = heatManager.getTrackedDispensers().get(read.hashCode()).getHeatValue();
+        baseMessage = baseMessage.append(Component.text("Current dispenser heat at: "))
+            .append(Component.text(heat));
+        player.sendMessage(baseMessage);
 
         return true;
     }
