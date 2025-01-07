@@ -66,19 +66,15 @@ public class WeaponHeatManager extends BukkitRunnable implements Listener {
         // This resets the dispenser's tile state if the plugin did not track it due to a crash or a bug.
         if (!trackedDispensers.contains(dispenserWeapon)) {
             dataContainer.remove(heatKey);
-            System.out.println("Dispenser not found in plugin, removing previous data.");
         }
 
         int currentAmount = dataContainer.getOrDefault(heatKey, PersistentDataType.INTEGER, 0);
-        System.out.println("The current amount is set to: " + currentAmount);
         amount += currentAmount;
-        System.out.println("The new amount is set to: " + amount);
 
         // Cleans the data container and the list of tracked dispensers.
         if (amount <= 0) {
             trackedDispensers.remove(dispenserWeapon);
             dataContainer.remove(heatKey);
-            System.out.println("Amount is determined to be less than zero, removing data.");
         } else {
             dataContainer.set(heatKey, PersistentDataType.INTEGER, amount);
             trackedDispensers.add(dispenserWeapon);
@@ -103,7 +99,6 @@ public class WeaponHeatManager extends BukkitRunnable implements Listener {
 
     private void setHeatFromForest(List<List<DispenserWeapon>> forest, Weapon weapon) {
         for (List<DispenserWeapon> dispenserTree : forest) {
-            System.out.println("Dispenser tree size: " + dispenserTree.size());
             for (DispenserWeapon dispenser : dispenserTree) {
                 setDispenserHeat(dispenser, dispenserTree.size() * weapon.heatRate());
             }
