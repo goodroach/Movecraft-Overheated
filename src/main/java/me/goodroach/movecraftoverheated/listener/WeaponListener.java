@@ -49,22 +49,21 @@ public class WeaponListener implements Listener {
 
         DispenserWeapon dispenserWeapon;
 
-        //TODO: Denest this later
+        UUID uuid = null;
+
         if (container.has(dispenserHeatUUID)) {
-            UUID uuid = UUID.fromString(container.get(dispenserHeatUUID, PersistentDataType.STRING));
-            if (heatManager.getTrackedDispensers().containsKey(uuid)) {
-                dispenserWeapon = heatManager.getTrackedDispensers().get(uuid);
-            } else {
-                dispenserWeapon = new DispenserWeapon(nodeLoc, block.getLocation());
-                container.set(dispenserHeatUUID, PersistentDataType.STRING, dispenserWeapon.getUuid().toString());
-                state.update();
-            }
+            uuid = UUID.fromString(container.get(dispenserHeatUUID, PersistentDataType.STRING));
+        }
+
+        if (uuid != null && heatManager.getTrackedDispensers().containsKey(uuid)) {
+            dispenserWeapon = heatManager.getTrackedDispensers().get(uuid);
         } else {
             dispenserWeapon = new DispenserWeapon(nodeLoc, block.getLocation());
             container.set(dispenserHeatUUID, PersistentDataType.STRING, dispenserWeapon.getUuid().toString());
             state.update();
         }
 
+        // Bind to craft and add to graph
         dispenserWeapon.bindToCraft(null);
         graph.addDispenser(dispenserWeapon);
     }
