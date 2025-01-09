@@ -11,6 +11,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.HashSet;
 import java.util.Objects;
+import java.util.UUID;
 
 import static me.goodroach.movecraftoverheated.MovecraftOverheated.craftHeatKey;
 import static me.goodroach.movecraftoverheated.config.Keys.BASE_HEAT_CAPACITY;
@@ -18,6 +19,7 @@ import static me.goodroach.movecraftoverheated.config.Keys.BASE_HEAT_CAPACITY;
 public class DispenserWeapon {
     private final Vector vector;
     private final Location absolute;
+    private final UUID uuid;
     private TrackedLocation tracked;
     private Craft craft;
     private int heatValue;
@@ -26,8 +28,7 @@ public class DispenserWeapon {
     public DispenserWeapon(Vector vector, Location absolute) {
         this.vector = vector;
         this.absolute = absolute;
-        this.heatValue = 0;
-        this.heatCapacity = 0;
+        uuid = UUID.randomUUID();
     }
 
     public Vector getVector() {
@@ -35,15 +36,10 @@ public class DispenserWeapon {
     }
 
     public boolean bindToCraft(@Nullable Craft craft) {
-        // First check looks for a craft in case the input is null.
         if (craft == null) {
-            craft = MathUtils.fastNearestCraftToLoc(CraftManager.getInstance().getCrafts(), absolute);
+            craft = MathUtils.getCraftByPersistentBlockData(absolute);
         }
-        // Second check ensures that there is a craft within the vicinity.
         if (craft == null) {
-            return false;
-        }
-        if (!MathUtils.locationInHitBox(craft.getHitBox(), absolute)) {
             return false;
         }
 
@@ -63,40 +59,19 @@ public class DispenserWeapon {
         return tracked.getAbsoluteLocation().toBukkit(craft.getWorld());
     }
 
-    public int getHeatValue() {
-        return heatValue;
+    public UUID getUuid() {
+        return uuid;
     }
-
-    public void addHeatValue(int amount) {
-        if (heatValue + amount <= 0) {
-            heatValue = 0;
-        }
-        heatValue += amount;
-    }
-
-    public void setHeatValue(int amount) {
-        heatValue = amount;
-    }
-
-    public int getHeatCapacity() {
-        return heatCapacity;
-    }
-
-    public void setHeatCapacity(int newCapacity) {
-        this.heatCapacity = newCapacity;
-    }
-
-    // These two methods are absolutely necessary to ensure dispensers can heat up multiple times
     @Override
     public boolean equals(Object obj) {
         if (this == obj) return true;
         if (obj == null || getClass() != obj.getClass()) return false;
         DispenserWeapon that = (DispenserWeapon) obj;
-        return this.getLocation().equals(that.getLocation()) && this.vector.equals(that.vector);
+        return this.getLocation().equals(that.getLocation()) && this.getVector().equals(that.getVector());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(getLocation(), vector);
+        return Objects.hash(getLocation(), getVector());
     }
 }
