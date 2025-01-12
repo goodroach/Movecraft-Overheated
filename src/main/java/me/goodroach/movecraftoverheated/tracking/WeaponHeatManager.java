@@ -91,6 +91,9 @@ public class WeaponHeatManager extends BukkitRunnable implements Listener {
             dataContainer.set(heatKey, PersistentDataType.INTEGER, amount);
             trackedDispensers.put(dispenserWeapon.getUuid(), dispenserWeapon);
         }
+
+        // Dont forget to save!
+        state.update();
     }
 
 
