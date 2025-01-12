@@ -42,13 +42,14 @@ public class DispenserWeapon {
         if (craft == null) {
             return false;
         }
+        // we are already bound to this craft!
+        if (this.craft.getUUID().equals(craft.getUUID()) && this.tracked != null) {
+            return true;
+        }
 
         this.craft = craft;
         this.tracked = new TrackedLocation(craft, MathUtils.bukkit2MovecraftLoc(absolute));
-        if (craft.getTrackedLocations().get(craftHeatKey) == null) {
-            craft.getTrackedLocations().put(craftHeatKey, new HashSet<>());
-        }
-        craft.getTrackedLocations().get(craftHeatKey).add(tracked);
+        craft.getTrackedLocations().computeIfAbsent(craftHeatKey, key -> new HashSet<>()).add(tracked);
         return true;
     }
 
