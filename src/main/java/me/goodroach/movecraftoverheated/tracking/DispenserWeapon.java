@@ -4,6 +4,7 @@ import me.goodroach.movecraftoverheated.config.Keys;
 import net.countercraft.movecraft.TrackedLocation;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
+import net.countercraft.movecraft.craft.SubCraft;
 import net.countercraft.movecraft.util.MathUtils;
 import org.bukkit.Location;
 import org.bukkit.util.Vector;
@@ -43,8 +44,19 @@ public class DispenserWeapon {
         if (craft == null) {
             return false;
         }
+
+        // TODO: Create a getter for this!
+        Craft alreadyKnownCraft = this.craft == null ? null : this.craft.get();
+
         // we are already bound to this craft!
-        if (this.craft != null && this.craft.get() != null && this.craft.get().getUUID().equals(craft.getUUID()) && this.tracked != null) {
+        if (alreadyKnownCraft != null && alreadyKnownCraft.getUUID().equals(craft.getUUID()) && this.tracked != null) {
+            return true;
+        }
+
+        // Movecraft itself shoudl do the transition stuff! We should not care about it at all!
+        if (craft instanceof SubCraft subCraft && alreadyKnownCraft == subCraft.getParent() && subCraft.getParent() != null) {
+            // We only need to update our craft reference, movecraft itself cares about updating the tracked location!
+            this.craft = new WeakReference<>(craft);
             return true;
         }
 
