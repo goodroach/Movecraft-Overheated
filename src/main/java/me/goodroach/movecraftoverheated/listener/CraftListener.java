@@ -29,6 +29,7 @@ public class CraftListener implements Listener {
     public void onCraftPilot(CraftDetectEvent event) {
         for (DispenserWeapon dispenser : heatManager.getTrackedDispensers().values()) {
             // Only care about those within the move box, otherwise this might be overkill
+            // TODO: Also check if that dispenser will be part of the craft!
             if (event.getCraft().getHitBox().inBounds(dispenser.getLocation().getX(), dispenser.getLocation().getY(), dispenser.getLocation().getZ())) {
                 dispenser.bindToCraft(event.getCraft());
             }
