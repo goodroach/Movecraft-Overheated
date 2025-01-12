@@ -57,6 +57,8 @@ public class CraftListener implements Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onCraftRelease(CraftReleaseEvent event) {
+        // TODO: Check what squadron uses! Otherwise squadrons could be abused
+        // If a squadron is used, check if it is within its parent or another craft (if it merged to it!) and then add it to that
         if (event.getReason() != CraftReleaseEvent.Reason.SUB_CRAFT) {
             return;
         }
@@ -72,6 +74,7 @@ public class CraftListener implements Listener {
         // Now, transfer back the tracking UUID to the parentcraft...
         // Now, find all signs on the craft...
         // TODO @DerToaster98: Include this change in base movecraft!
+        // TODO: For subcrafts, restore the parents UUID if it is within the parent (mostly has to do with things like Squadrons which are subcrafts too)
         for (MovecraftLocation mLoc : releasedSubCraft.getHitBox()) {
             Block block = mLoc.toBukkit(releasedSubCraft.getWorld()).getBlock();
             // Only interested in signs, if no sign => continue
