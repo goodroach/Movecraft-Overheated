@@ -9,6 +9,7 @@ import org.bukkit.Location;
 import org.bukkit.util.Vector;
 import org.jetbrains.annotations.Nullable;
 
+import java.lang.ref.WeakReference;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.UUID;
@@ -21,7 +22,7 @@ public class DispenserWeapon {
     private final Location absolute;
     private final UUID uuid;
     private TrackedLocation tracked;
-    private Craft craft;
+    private WeakReference<Craft> craft;
     private int heatValue;
     private int heatCapacity;
 
@@ -43,21 +44,21 @@ public class DispenserWeapon {
             return false;
         }
         // we are already bound to this craft!
-        if (this.craft != null && this.craft.getUUID().equals(craft.getUUID()) && this.tracked != null) {
+        if (this.craft != null && this.craft.get() != null && this.craft.get().getUUID().equals(craft.getUUID()) && this.tracked != null) {
             return true;
         }
 
-        this.craft = craft;
+        this.craft = new WeakReference<>(craft);
         this.tracked = new TrackedLocation(craft, MathUtils.bukkit2MovecraftLoc(absolute));
         craft.getTrackedLocations().computeIfAbsent(craftHeatKey, key -> new HashSet<>()).add(tracked);
         return true;
     }
 
     public Location getLocation() {
-        if (tracked == null) {
+        if (tracked == null || this.craft.get() == null) {
             return absolute;
         }
-        return tracked.getAbsoluteLocation().toBukkit(craft.getWorld());
+        return tracked.getAbsoluteLocation().toBukkit(craft.get().getWorld());
     }
 
     public UUID getUuid() {
