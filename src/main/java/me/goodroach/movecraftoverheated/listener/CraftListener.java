@@ -8,8 +8,10 @@ import net.countercraft.movecraft.craft.SubCraft;
 import net.countercraft.movecraft.events.CraftDetectEvent;
 import net.countercraft.movecraft.events.CraftPilotEvent;
 import net.countercraft.movecraft.events.CraftReleaseEvent;
+import net.countercraft.movecraft.listener.InteractListener;
 import org.bukkit.block.Block;
 import org.bukkit.block.Dispenser;
+import org.bukkit.block.Sign;
 import org.bukkit.block.TileState;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -55,38 +57,26 @@ public class CraftListener implements Listener {
         }
     }
 
+    // TODO @DerToaster98: Check squadrons again for this! as there might be a more fitting craft than the parent for this logic...
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onCraftRelease(CraftReleaseEvent event) {
-        // TODO: Check what squadron uses! Otherwise squadrons could be abused
-        // If a squadron is used, check if it is within its parent or another craft (if it merged to it!) and then add it to that
-        if (event.getReason() != CraftReleaseEvent.Reason.SUB_CRAFT) {
-            return;
-        }
-        Craft released = event.getCraft();
-        if (!(released instanceof SubCraft)) {
-            return;
-        }
-        SubCraft releasedSubCraft = (SubCraft) released;
-        if (releasedSubCraft.getParent() == null) {
-            return;
-        }
+        // Walk through all signs and set a UUID in there
+        // TODO: For subcrafts, restore the parents UUID if it is within the parent
+        final Craft craft = event.getCraft();
 
-        // Now, transfer back the tracking UUID to the parentcraft...
         // Now, find all signs on the craft...
-        // TODO @DerToaster98: Include this change in base movecraft!
-        // TODO: For subcrafts, restore the parents UUID if it is within the parent (mostly has to do with things like Squadrons which are subcrafts too)
-        for (MovecraftLocation mLoc : releasedSubCraft.getHitBox()) {
-            Block block = mLoc.toBukkit(releasedSubCraft.getWorld()).getBlock();
+        for (MovecraftLocation mLoc : craft.getHitBox()) {
+            Block block = mLoc.toBukkit(craft.getWorld()).getBlock();
             // Only interested in signs, if no sign => continue
-            // Edit: That's useful for dispensers too to flag TNT and the like, but for that one could use a separate listener
             if (!(block.getState() instanceof Dispenser))
                 continue;
             // Sign located!
             Dispenser tile = (Dispenser) block.getState();
 
-            releasedSubCraft.getParent().markTileStateWithUUID(tile);
+            craft.removeUUIDMarkFromTile(tile);
+
             tile.update();
         }
-
     }
+
 }
