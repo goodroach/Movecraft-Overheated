@@ -43,7 +43,7 @@ public class DispenserWeapon {
             return false;
         }
         // we are already bound to this craft!
-        if (this.craft.getUUID().equals(craft.getUUID()) && this.tracked != null) {
+        if (this.craft != null && this.craft.getUUID().equals(craft.getUUID()) && this.tracked != null) {
             return true;
         }
 
