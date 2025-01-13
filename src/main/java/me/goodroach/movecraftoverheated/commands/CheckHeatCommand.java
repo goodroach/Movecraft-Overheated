@@ -1,9 +1,11 @@
 package me.goodroach.movecraftoverheated.commands;
 
+import me.goodroach.movecraftoverheated.tracking.DispenserWeapon;
 import me.goodroach.movecraftoverheated.tracking.WeaponHeatManager;
 import net.countercraft.movecraft.util.ChatUtils;
 import net.kyori.adventure.text.Component;
 import org.bukkit.FluidCollisionMode;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.TileState;
@@ -16,9 +18,18 @@ import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.util.RayTraceResult;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Map;
+import java.util.UUID;
+
+import static me.goodroach.movecraftoverheated.MovecraftOverheated.dispenserHeatUUID;
 import static me.goodroach.movecraftoverheated.MovecraftOverheated.heatKey;
 
 public class CheckHeatCommand implements CommandExecutor {
+    private final WeaponHeatManager heatManager;
+
+    public CheckHeatCommand(WeaponHeatManager heatManager) {
+        this.heatManager = heatManager;
+    }
 
     @Override
     public boolean onCommand(
@@ -60,8 +71,40 @@ public class CheckHeatCommand implements CommandExecutor {
         int heat = container.get(heatKey, PersistentDataType.INTEGER);
         baseMessage = baseMessage.append(Component.text("Current dispenser heat at: "))
             .append(Component.text(heat));
-        player.sendMessage(baseMessage);
 
+        // Get UUID and attach it to the message
+        String uuidString = container.get(dispenserHeatUUID, PersistentDataType.STRING);
+        if (uuidString == null) {
+            baseMessage = baseMessage.append(Component.text("\nUUID: Not found in dispenser data."));
+            player.sendMessage(baseMessage);
+            return true;
+        }
+
+        UUID uuid;
+        try {
+            uuid = UUID.fromString(uuidString);
+            baseMessage = baseMessage.append(Component.text("\nUUID: ")).append(Component.text(uuid.toString()));
+        } catch (IllegalArgumentException e) {
+            baseMessage = baseMessage.append(Component.text("\nInvalid UUID format: " + uuidString));
+            player.sendMessage(baseMessage);
+            return true;
+        }
+
+        // Get location and attach it to the message
+        Map<UUID, DispenserWeapon> trackedDispensers = heatManager.getTrackedDispensers();
+        DispenserWeapon trackedDispenser = trackedDispensers.get(uuid);
+
+        if (trackedDispenser == null) {
+            baseMessage = baseMessage.append(Component.text("\nNo tracked dispenser found for UUID: " + uuid));
+            player.sendMessage(baseMessage);
+            return true;
+        }
+
+        Location location = trackedDispenser.getLocation();
+        baseMessage = baseMessage.append(Component.text("\nDispenser Location: "))
+            .append(Component.text(location.toString()));
+
+        player.sendMessage(baseMessage);
         return true;
     }
 }
