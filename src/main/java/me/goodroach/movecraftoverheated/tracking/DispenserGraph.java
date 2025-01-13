@@ -7,9 +7,11 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class DispenserGraph {
-    private Map<DispenserWeapon, List<DispenserWeapon>> adjList = new HashMap<>();
+    // Use concurrent for optimizations later
+    private Map<DispenserWeapon, List<DispenserWeapon>> adjList = new ConcurrentHashMap<>();
     private final Weapon weapon;
 
     public DispenserGraph(Weapon weapon) {
@@ -21,7 +23,8 @@ public class DispenserGraph {
     }
 
     public void addDispenser(DispenserWeapon dispenserWeapon) {
-        adjList.put(dispenserWeapon, new ArrayList<>());
+        // Use putIfAbsent, otherwise you will reset the entire thing everytime!
+        adjList.putIfAbsent(dispenserWeapon, new ArrayList<>());
     }
 
     public void makeEdges() {
