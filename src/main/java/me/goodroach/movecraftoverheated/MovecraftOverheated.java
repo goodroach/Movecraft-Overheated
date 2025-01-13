@@ -49,7 +49,7 @@ public final class MovecraftOverheated extends JavaPlugin {
         // Plugin startup logic
         initConfig();
 
-        this.getCommand("checkheat").setExecutor(new CheckHeatCommand());
+        this.getCommand("checkheat").setExecutor(new CheckHeatCommand(heatManager));
 
     }
 

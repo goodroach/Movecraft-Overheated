@@ -60,12 +60,17 @@ public class WeaponHeatManager extends BukkitRunnable implements Listener {
         }
 
         // Check if the dispenserWeapon is already in the map, and if so, get the existing one
-        DispenserWeapon existingWeapon = trackedDispensers.get(dispenserWeapon.hashCode());
+        DispenserWeapon existingWeapon = trackedDispensers.get(dispenserWeapon.getUuid());
         if (existingWeapon != null) {
             dispenserWeapon = existingWeapon; // Reuse the existing dispenserWeapon object
         }
 
         Block dispenser = dispenserWeapon.getLocation().getBlock();
+        if (dispenser.getType() != Material.DISPENSER) {
+            System.out.println("Block seems to be an instance of: " + dispenser.getType());
+            trackedDispensers.remove(dispenserWeapon.getUuid());
+            return;
+        }
         TileState state = (TileState) dispenser.getState();
         PersistentDataContainer dataContainer = state.getPersistentDataContainer();
 
@@ -83,7 +88,7 @@ public class WeaponHeatManager extends BukkitRunnable implements Listener {
 
         // Cleans the data container and the list of tracked dispensers.
         if (amount <= 0) {
-            trackedDispensers.remove(dispenserWeapon);
+            trackedDispensers.remove(dispenserWeapon.getUuid());
             dataContainer.remove(heatKey);
             dataContainer.remove(dispenserHeatUUID);
             System.out.println("Amount is determeined to be less than zero, removing data.");
