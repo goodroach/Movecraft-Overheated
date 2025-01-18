@@ -44,7 +44,6 @@ public class CraftListener implements Listener {
         for (MovecraftLocation mLoc : craft.getHitBox()) {
             Block block = mLoc.toBukkit(craft.getWorld()).getBlock();
             // Only interested in signs, if no sign => continue
-            // TODO: Just limit to signs?
             // Edit: That's useful for dispensers too to flag TNT and the like, but for that one could use a separate listener
             if (!(block.getState() instanceof Dispenser))
                 continue;
@@ -56,8 +55,6 @@ public class CraftListener implements Listener {
         }
     }
 
-    // TODO @DerToaster98: Check squadrons again for this! as there might be a more fitting craft than the parent for this logic...
-    // TODO: Alternative solution (might be preferrable!): If a subcraft gets released, re-bind the dispensers to the parent
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onCraftRelease(CraftReleaseEvent event) {
         // Walk through all signs and set a UUID in there
