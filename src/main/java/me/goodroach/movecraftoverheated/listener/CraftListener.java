@@ -8,11 +8,8 @@ import net.countercraft.movecraft.craft.SubCraft;
 import net.countercraft.movecraft.events.CraftDetectEvent;
 import net.countercraft.movecraft.events.CraftPilotEvent;
 import net.countercraft.movecraft.events.CraftReleaseEvent;
-import net.countercraft.movecraft.listener.InteractListener;
 import org.bukkit.block.Block;
 import org.bukkit.block.Dispenser;
-import org.bukkit.block.Sign;
-import org.bukkit.block.TileState;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -27,6 +24,7 @@ public class CraftListener implements Listener {
 
     @EventHandler
     public void onCraftPilot(CraftDetectEvent event) {
+        // TODO: Add references to the dispenser weapons to the craft via datatags (weak-set)
         for (DispenserWeapon dispenser : heatManager.getTrackedDispensers().values()) {
             // Only care about those within the move box, otherwise this might be overkill
             // TODO: Also check if that dispenser will be part of the craft!
@@ -46,7 +44,6 @@ public class CraftListener implements Listener {
         for (MovecraftLocation mLoc : craft.getHitBox()) {
             Block block = mLoc.toBukkit(craft.getWorld()).getBlock();
             // Only interested in signs, if no sign => continue
-            // TODO: Just limit to signs?
             // Edit: That's useful for dispensers too to flag TNT and the like, but for that one could use a separate listener
             if (!(block.getState() instanceof Dispenser))
                 continue;
@@ -58,7 +55,6 @@ public class CraftListener implements Listener {
         }
     }
 
-    // TODO @DerToaster98: Check squadrons again for this! as there might be a more fitting craft than the parent for this logic...
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onCraftRelease(CraftReleaseEvent event) {
         // Walk through all signs and set a UUID in there
@@ -77,6 +73,21 @@ public class CraftListener implements Listener {
             craft.removeUUIDMarkFromTile(tile);
 
             tile.update();
+        }
+
+        // Update the absolute location when a craft is released
+        // TODO: Make this prettier, this is not pretty
+        for (DispenserWeapon dispenser : heatManager.getTrackedDispensers().values()) {
+            // Only care about those within the move box, otherwise this might be overkill
+            if (event.getCraft().getHitBox().inBounds(dispenser.getLocation().getX(), dispenser.getLocation().getY(), dispenser.getLocation().getZ())) {
+                dispenser.unbindFromCraft(event.getCraft());
+                if (event.getCraft() instanceof SubCraft subCraft && subCraft.getParent() != null) {
+                    Craft parent = subCraft.getParent();
+                    if (parent.getHitBox().inBounds(dispenser.getLocation().getX(), dispenser.getLocation().getY(), dispenser.getLocation().getZ())) {
+                        dispenser.bindToCraft(parent);
+                    }
+                }
+            }
         }
     }
 
