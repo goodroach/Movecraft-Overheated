@@ -1,6 +1,7 @@
 package me.goodroach.movecraftoverheated.tracking;
 
 import me.goodroach.movecraftoverheated.config.Keys;
+import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.TrackedLocation;
 import net.countercraft.movecraft.craft.Craft;
 import net.countercraft.movecraft.craft.CraftManager;
@@ -13,6 +14,7 @@ import org.jetbrains.annotations.Nullable;
 import java.lang.ref.WeakReference;
 import java.util.HashSet;
 import java.util.Objects;
+import java.util.Set;
 import java.util.UUID;
 
 import static me.goodroach.movecraftoverheated.MovecraftOverheated.craftHeatKey;
@@ -22,8 +24,8 @@ public class DispenserWeapon {
     private final Vector vector;
     private final Location absolute;
     private final UUID uuid;
-    private TrackedLocation tracked;
-    private WeakReference<Craft> craft;
+    private WeakReference<TrackedLocation> tracked = new WeakReference<>(null);
+    private WeakReference<Craft> craft = new WeakReference<>(null);
     private int heatValue;
     private int heatCapacity;
 
@@ -45,8 +47,7 @@ public class DispenserWeapon {
             return false;
         }
 
-        // TODO: Create a getter for this!
-        Craft alreadyKnownCraft = this.craft == null ? null : this.craft.get();
+        Craft alreadyKnownCraft = getCraft();
 
         // we are already bound to this craft!
         if (alreadyKnownCraft != null && alreadyKnownCraft.getUUID().equals(craft.getUUID()) && this.tracked != null) {
@@ -61,16 +62,45 @@ public class DispenserWeapon {
         }
 
         this.craft = new WeakReference<>(craft);
-        this.tracked = new TrackedLocation(craft, MathUtils.bukkit2MovecraftLoc(absolute));
-        craft.getTrackedLocations().computeIfAbsent(craftHeatKey, key -> new HashSet<>()).add(tracked);
+
+        Set<TrackedLocation> trackedLocationSet = craft.getTrackedLocations().computeIfAbsent(craftHeatKey, key -> new HashSet<>());
+        MovecraftLocation absoluteMovecraft = MathUtils.bukkit2MovecraftLoc(absolute);
+        TrackedLocation trackedLocation = null;
+        // TODO: Test performance! Possibly move this to a async task...
+        for (TrackedLocation known : trackedLocationSet) {
+            if (known.getAbsoluteLocation().equals(absoluteMovecraft)) {
+                trackedLocation = known;
+                break;
+            }
+        }
+        if (trackedLocation == null) {
+            trackedLocation = new TrackedLocation(craft, absoluteMovecraft);
+            if (trackedLocationSet.add(trackedLocation)) {
+                this.tracked = new WeakReference<>(trackedLocation);
+                return true;
+            } else {
+                return false;
+            }
+        }
+
         return true;
     }
 
     public Location getLocation() {
-        if (tracked == null || this.craft.get() == null) {
+        if (getTrackedLocation() == null || getCraft() == null) {
             return absolute;
         }
-        return tracked.getAbsoluteLocation().toBukkit(craft.get().getWorld());
+        return getTrackedLocation().getAbsoluteLocation().toBukkit(getCraft().getWorld());
+    }
+
+    @Nullable
+    protected TrackedLocation getTrackedLocation() {
+        return this.tracked.get();
+    }
+
+    @Nullable
+    public Craft getCraft() {
+        return this.craft.get();
     }
 
     public UUID getUuid() {
