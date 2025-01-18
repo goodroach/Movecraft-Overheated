@@ -32,7 +32,7 @@ public class WeaponHeatManager extends BukkitRunnable implements Listener {
     public void run() {
         long time = System.currentTimeMillis();
         for (DispenserGraph graph : weapons.values()) {
-            //coolDispensers(graph.getWeapon());
+            coolDispensers(graph.getWeapon());
 
             List<List<DispenserWeapon>> dispenserForest = graphManager.getForest(graph);
 
