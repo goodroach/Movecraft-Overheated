@@ -31,7 +31,7 @@ public class WeaponHeatManager extends BukkitRunnable implements Listener {
     public void run() {
         long time = System.currentTimeMillis();
         for (DispenserGraph graph : weapons.values()) {
-            //coolDispensers(graph.getWeapon());
+            coolDispensers(graph.getWeapon());
 
             List<List<DispenserWeapon>> dispenserForest = graphManager.getForest(graph);
 
@@ -41,7 +41,7 @@ public class WeaponHeatManager extends BukkitRunnable implements Listener {
     }
 
     /**
-     * Sets the heat value for a given dispenser weapon.
+     * Adds heat to a given dispenser weapon.
      * <p>
      * This method updates the persistent data container of the dispenser's block to track the heat value.
      * It ensures that the dispenser's heat does not go below zero and removes the dispenser from tracking
@@ -78,20 +78,17 @@ public class WeaponHeatManager extends BukkitRunnable implements Listener {
         if (!trackedDispensers.containsValue(dispenserWeapon)) {
             dataContainer.remove(heatKey);
             dataContainer.remove(dispenserHeatUUID);
-            System.out.println("Dispenser not found in plugin, removing previous data.");
+            dataContainer.set(dispenserHeatUUID, PersistentDataType.STRING, dispenserWeapon.getUuid().toString());
         }
 
         int currentAmount = dataContainer.getOrDefault(heatKey, PersistentDataType.INTEGER, 0);
-        System.out.println("The current amount is set to: " + currentAmount);
         amount += currentAmount;
-        System.out.println("The new amount is set to: " + amount);
 
         // Cleans the data container and the list of tracked dispensers.
         if (amount <= 0) {
             trackedDispensers.remove(dispenserWeapon.getUuid());
             dataContainer.remove(heatKey);
             dataContainer.remove(dispenserHeatUUID);
-            System.out.println("Amount is determeined to be less than zero, removing data.");
         } else {
             dataContainer.set(heatKey, PersistentDataType.INTEGER, amount);
             trackedDispensers.put(dispenserWeapon.getUuid(), dispenserWeapon);

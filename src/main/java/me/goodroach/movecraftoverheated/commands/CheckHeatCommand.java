@@ -9,6 +9,10 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.TileState;
+<<<<<<< HEAD
+=======
+import org.bukkit.block.data.type.Dispenser;
+>>>>>>> 0b71f9d5abaad50ff0de94c6ab2b20bb6bd3c345
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -33,10 +37,10 @@ public class CheckHeatCommand implements CommandExecutor {
 
     @Override
     public boolean onCommand(
-        @NotNull CommandSender sender,
-        @NotNull Command command,
-        @NotNull String label,
-        @NotNull String[] args
+            @NotNull CommandSender sender,
+            @NotNull Command command,
+            @NotNull String label,
+            @NotNull String[] args
     ) {
         // Check if the sender is a player
         if (!(sender instanceof Player)) {
@@ -67,11 +71,19 @@ public class CheckHeatCommand implements CommandExecutor {
             player.sendMessage(baseMessage);
             return true;
         }
+<<<<<<< HEAD
 
         int heat = container.get(heatKey, PersistentDataType.INTEGER);
         baseMessage = baseMessage.append(Component.text("Current dispenser heat at: "))
             .append(Component.text(heat));
 
+=======
+
+        int heat = container.get(heatKey, PersistentDataType.INTEGER);
+        baseMessage = baseMessage.append(Component.text("Current dispenser heat at: "))
+                .append(Component.text(heat));
+
+>>>>>>> 0b71f9d5abaad50ff0de94c6ab2b20bb6bd3c345
         // Get UUID and attach it to the message
         String uuidString = container.get(dispenserHeatUUID, PersistentDataType.STRING);
         if (uuidString == null) {
@@ -102,9 +114,18 @@ public class CheckHeatCommand implements CommandExecutor {
 
         Location location = trackedDispenser.getLocation();
         baseMessage = baseMessage.append(Component.text("\nDispenser Location: "))
+<<<<<<< HEAD
             .append(Component.text(location.toString()));
+=======
+                .append(Component.text(location.toString()));
+>>>>>>> 0b71f9d5abaad50ff0de94c6ab2b20bb6bd3c345
 
         player.sendMessage(baseMessage);
         return true;
     }
+<<<<<<< HEAD
 }
+=======
+
+}
+>>>>>>> 0b71f9d5abaad50ff0de94c6ab2b20bb6bd3c345
