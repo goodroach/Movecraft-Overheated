@@ -39,9 +39,13 @@ public class DispenserWeapon {
 
     // when unbinding from a craft, update the absolute location!
     public void unbindFromCraft(@NotNull Craft craft) {
+        if (this.getTrackedLocation() == null) {
+            // technically, this is an error case...
+            return;
+        }
         if (this.getCraft() == craft || (craft instanceof SubCraft subCraft && subCraft.getParent() == this.getCraft())) {
+            Location tracked = getTrackedLocation().getAbsoluteLocation().toBukkit(getCraft().getWorld());
             if (!tracked.equals(this.absolute)) {
-                Location tracked = getTrackedLocation().getAbsoluteLocation().toBukkit(getCraft().getWorld());
                 this.absolute.setWorld(tracked.getWorld());
                 this.absolute.set(tracked.getX(), tracked.getY(), tracked.getZ());
             }
@@ -90,6 +94,8 @@ public class DispenserWeapon {
             } else {
                 return false;
             }
+        } else {
+            this.tracked = new WeakReference<>(trackedLocation);
         }
 
         return true;
