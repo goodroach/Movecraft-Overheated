@@ -1,14 +1,13 @@
 package me.goodroach.movecraftoverheated.tracking;
 
-import me.goodroach.movecraftoverheated.config.Keys;
 import net.countercraft.movecraft.MovecraftLocation;
 import net.countercraft.movecraft.TrackedLocation;
 import net.countercraft.movecraft.craft.Craft;
-import net.countercraft.movecraft.craft.CraftManager;
 import net.countercraft.movecraft.craft.SubCraft;
 import net.countercraft.movecraft.util.MathUtils;
 import org.bukkit.Location;
 import org.bukkit.util.Vector;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.lang.ref.WeakReference;
@@ -18,7 +17,6 @@ import java.util.Set;
 import java.util.UUID;
 
 import static me.goodroach.movecraftoverheated.MovecraftOverheated.craftHeatKey;
-import static me.goodroach.movecraftoverheated.config.Keys.BASE_HEAT_CAPACITY;
 
 public class DispenserWeapon {
     private final Vector vector;
@@ -39,6 +37,17 @@ public class DispenserWeapon {
         return vector;
     }
 
+    // when unbinding from a craft, update the absolute location!
+    public void unbindFromCraft(@NotNull Craft craft) {
+        if (this.getCraft() == craft || (craft instanceof SubCraft subCraft && subCraft.getParent() == this.getCraft())) {
+            if (!tracked.equals(this.absolute)) {
+                Location tracked = getTrackedLocation().getAbsoluteLocation().toBukkit(getCraft().getWorld());
+                this.absolute.setWorld(tracked.getWorld());
+                this.absolute.set(tracked.getX(), tracked.getY(), tracked.getZ());
+            }
+        }
+    }
+
     public boolean bindToCraft(@Nullable Craft craft) {
         if (craft == null) {
             craft = MathUtils.getCraftByPersistentBlockData(absolute);
@@ -50,7 +59,7 @@ public class DispenserWeapon {
         Craft alreadyKnownCraft = getCraft();
 
         // we are already bound to this craft!
-        if (alreadyKnownCraft != null && alreadyKnownCraft.getUUID().equals(craft.getUUID()) && this.tracked != null) {
+        if (alreadyKnownCraft != null && alreadyKnownCraft.getUUID().equals(craft.getUUID()) && this.getTrackedLocation() != null) {
             return true;
         }
 
@@ -87,10 +96,12 @@ public class DispenserWeapon {
     }
 
     public Location getLocation() {
-        if (getTrackedLocation() == null || getCraft() == null) {
-            return absolute;
+        if (getTrackedLocation() != null && getCraft() != null) {
+            Location tracked = getTrackedLocation().getAbsoluteLocation().toBukkit(getCraft().getWorld());
+            return tracked;
+        } else {
+            return this.absolute;
         }
-        return getTrackedLocation().getAbsoluteLocation().toBukkit(getCraft().getWorld());
     }
 
     @Nullable
